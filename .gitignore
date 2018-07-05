@@ -1,0 +1,10 @@
+src/*.o
+jpeg-recompress
+jpeg-compare
+jpeg-hash
+test-files
+test-output
+comparison
+comparison.png
+test/test.jpg
+test/test

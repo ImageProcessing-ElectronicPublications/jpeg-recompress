@@ -1,0 +1,59 @@
+.TH "Jpeg-archive User Manual" 2.1.2 "18 Jun 2018" "User documentation"
+.SH NAME
+jpeg-compare
+.SH DESCRIPTION
+Compare two JPEG photos to judge how similar they are.
+The fast comparison method returns an integer from 0 to 99, where 0 is identical.
+PSNR, SSIM, and MS-SSIM return floats but require images to be the same dimensions.
+.SH SYNOPSIS
+jpeg-compare [options] image1.jpg image2.jpg
+.SH OPTIONS
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+output program version
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+output program help
+.TP
+\fB\-s\fR, \fB\-\-size\fR [arg]
+set fast comparison image hash size
+.TP
+\fB\-m\fR, \fB\-\-method\fR [arg]
+set comparison method to one of 'fast', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad' [fast]
+.TP
+\fB\-r\fR, \fB\-\-ppm\fR
+parse first input as PPM instead of JPEG
+.TP
+\fB\-T\fR, \fB\-\-input-filetype\fR [arg]
+set first input file type to one of 'auto', 'jpeg', 'ppm' [auto]
+.TP
+\fB\-U\fR, \fB\-\-second-filetype\fR [arg]
+set second input file type to one of 'auto', 'jpeg', 'ppm' [auto]
+.TP
+\fB\-\-short\fR
+do not prefix output with the name of the used method
+.SH EXAMPLES
+Do a fast compare of two images:
+.PP
+.I
+jpeg-compare image1.jpg image2.jpg
+.PP
+Calculate PSNR:
+.PP
+.I
+jpeg-compare --method psnr image1.jpg image2.jpg
+.PP
+Calculate SSIM:
+.PP
+.I
+jpeg-compare --method ssim image1.jpg image2.jpg
+.SH COPYRIGHT
+ JPEG-Archive is copyright © 2015 Daniel G. Taylor
+ Image Quality Assessment (IQA) is copyright 2011, Tom Distler (http://tdistler.com)
+ SmallFry is copyright 2014, Derek Buitenhuis (https://github.com/dwbuiten)
+ All rights reserved.
+.SH "SEE ALSO"
+ jpeg-hash,
+ jpeg-recompress,
+ mozcjpeg
+
