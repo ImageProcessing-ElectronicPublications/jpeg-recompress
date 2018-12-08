@@ -24,23 +24,26 @@
 const char *COMMENT = "Compressed by jpeg-recompress";
 
 // Comparison method
-enum METHOD {
+enum METHOD
+{
     UNKNOWN,
     SSIM,
     MS_SSIM,
     SMALLFRY,
     SSIMFRY,
     SHARPENBAD,
+    SUMMET,
     MPE
 };
 
-int method = SSIM;
+int method = SUMMET;
 
 // Number of binary search steps
 int attempts = 6;
 
 // Target quality (SSIM) value
-enum QUALITY_PRESET {
+enum QUALITY_PRESET 
+{
     LOW,
     MEDIUM,
     HIGH,
@@ -48,8 +51,6 @@ enum QUALITY_PRESET {
 };
 
 float target = 0.0;
-float kametric = 1.0;
-float kbmetric = 0.0;
 int preset = MEDIUM;
 
 // Min/max JPEG quality
@@ -81,15 +82,18 @@ int subsample = SUBSAMPLE_DEFAULT;
 // Quiet mode (less output)
 int quiet = 0;
 
-static void setAttempts(command_t *self) {
+static void setAttempts(command_t *self)
+{
     attempts = atoi(self->arg);
 }
 
-static void setTarget(command_t *self) {
+static void setTarget(command_t *self)
+{
     target = atof(self->arg);
 }
 
-static void setQuality(command_t *self) {
+static void setQuality(command_t *self)
+{
     if (!strcmp("low", self->arg)) {
         preset = LOW;
     } else if (!strcmp("medium", self->arg)) {
@@ -103,7 +107,8 @@ static void setQuality(command_t *self) {
     }
 }
 
-static void setMethod(command_t *self) {
+static void setMethod(command_t *self)
+{
     if (!strcmp("ssim", self->arg)) {
         method = SSIM;
     } else if (!strcmp("ms-ssim", self->arg)) {
@@ -116,36 +121,45 @@ static void setMethod(command_t *self) {
         method = SHARPENBAD;
     } else if (!strcmp("mpe", self->arg)) {
         method = MPE;
+    } else if (!strcmp("sum", self->arg)) {
+        method = SUMMET;
     } else {
         method = UNKNOWN;
     }
 }
 
-static void setNoProgressive(command_t *self) {
+static void setNoProgressive(command_t *self)
+{
     noProgressive = 1;
 }
 
-static void setMinimum(command_t *self) {
+static void setMinimum(command_t *self)
+{
     jpegMin = atoi(self->arg);
 }
 
-static void setMaximum(command_t *self) {
+static void setMaximum(command_t *self)
+{
     jpegMax = atoi(self->arg);
 }
 
-static void setStrip(command_t *self) {
+static void setStrip(command_t *self)
+{
     strip = 1;
 }
 
-static void setDefish(command_t *self) {
+static void setDefish(command_t *self)
+{
     defishStrength = atof(self->arg);
 }
 
-static void setZoom(command_t *self) {
+static void setZoom(command_t *self)
+{
     defishZoom = atof(self->arg);
 }
 
-static void setInputFiletype(command_t *self) {
+static void setInputFiletype(command_t *self)
+{
     if (!strcmp("auto", self->arg))
         inputFiletype = FILETYPE_AUTO;
     else if (!strcmp("jpeg", self->arg))
@@ -156,19 +170,23 @@ static void setInputFiletype(command_t *self) {
         inputFiletype = FILETYPE_UNKNOWN;
 }
 
-static void setPpm(command_t *self) {
+static void setPpm(command_t *self)
+{
     inputFiletype = FILETYPE_PPM;
 }
 
-static void setCopyFiles(command_t *self) {
+static void setCopyFiles(command_t *self)
+{
     copyFiles = 0;
 }
 
-static void setAccurate(command_t *self) {
+static void setAccurate(command_t *self)
+{
     accurate = 1;
 }
 
-static void setTargetFromPreset() {
+static void setTargetFromPreset()
+{
     switch (preset) {
         case LOW:
             target = 0.5;
@@ -184,32 +202,38 @@ static void setTargetFromPreset() {
             break;
     }
 }
-static void setRescaleMetricParam() {
-    switch (method) {
+static float RescaleMetric(int currentmethod, float value)
+{
+    float kametric = 1.0;
+    float kbmetric = 0.0;
+    switch (currentmethod) {
         case SSIM:
-            kametric = 501.0;
-            kbmetric = -500.0;
+            kametric = 251.0;
+            kbmetric = -250.0;
+            value *= value;
             break;
         case MS_SSIM:
-            kametric = 3.8;
-            kbmetric = -2.73;
+            kametric = 2.08;
+            kbmetric = -1.0;
+            value *= value;
             break;
         case SMALLFRY:
             kametric = 0.105;
             kbmetric = -10.0;
             break;
-        case SSIMFRY:
-            kametric = 259.64;
-            kbmetric = -264.09;
-            break;
         case MPE:
-            kametric = -0.57;
-            kbmetric = 1.36;
+            kametric = -1.16;
+            kbmetric = 1.94;
+            value = sqrt(value);
             break;
     }
+    value *= kametric;
+    value += kbmetric;
+    return value;
 }
 
-static void setSubsampling(command_t *self) {
+static void setSubsampling(command_t *self)
+{
     if (!strcmp("default", self->arg)) {
         subsample = SUBSAMPLE_DEFAULT;
     } else if (!strcmp("disable", self->arg)) {
@@ -219,12 +243,14 @@ static void setSubsampling(command_t *self) {
     }
 }
 
-static void setQuiet(command_t *self) {
+static void setQuiet(command_t *self)
+{
     quiet = 1;
 }
 
 // Open a file for writing
-FILE *openOutput(char *name) {
+FILE *openOutput(char *name)
+{
     if (strcmp("-", name) == 0) {
         #ifdef _WIN32
             setmode(fileno(stdout), O_BINARY);
@@ -237,7 +263,8 @@ FILE *openOutput(char *name) {
 }
 
 // Logs an informational message, taking quiet mode into account
-void info(const char *format, ...) {
+void info(const char *format, ...)
+{
     va_list argptr;
 
     if (!quiet) {
@@ -247,7 +274,8 @@ void info(const char *format, ...) {
     }
 }
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+{
     unsigned char *buf;
     long bufSize = 0;
     unsigned char *original;
@@ -274,7 +302,7 @@ int main (int argc, char **argv) {
     command_option(&cmd, "-x", "--max [arg]", "Maximum JPEG quality [98]", setMaximum);
     command_option(&cmd, "-l", "--loops [arg]", "Set the number of runs to attempt [6]", setAttempts);
     command_option(&cmd, "-a", "--accurate", "Favor accuracy over speed", setAccurate);
-    command_option(&cmd, "-m", "--method [arg]", "Set comparison method to one of 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry', 'shbad' [ssim]", setMethod);
+    command_option(&cmd, "-m", "--method [arg]", "Set comparison method to one of 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry', 'shbad', 'sum' [sum]", setMethod);
     command_option(&cmd, "-s", "--strip", "Strip metadata", setStrip);
     command_option(&cmd, "-d", "--defish [arg]", "Set defish strength [0.0]", setDefish);
     command_option(&cmd, "-z", "--zoom [arg]", "Set defish zoom [1.0]", setZoom);
@@ -286,22 +314,24 @@ int main (int argc, char **argv) {
     command_option(&cmd, "-Q", "--quiet", "Only print out errors.", setQuiet);
     command_parse(&cmd, argc, argv);
 
-    if (cmd.argc < 2) {
+    if (cmd.argc < 2)
+    {
         command_help(&cmd);
         return 255;
     }
 
-    if (method == UNKNOWN) {
+    if (method == UNKNOWN)
+    {
         fprintf(stderr, "Invalid method!");
         command_help(&cmd);
         return 255;
     }
 
     // No target passed, use preset!
-    if (!target) {
+    if (!target)
+    {
         setTargetFromPreset();
     }
-    setRescaleMetricParam();
     
     char *inputPath = (char *) cmd.argv[0];
     char *outputPath = cmd.argv[1];
@@ -318,12 +348,14 @@ int main (int argc, char **argv) {
      * size to obtain meta data and the original file size later.
      */
     originalSize = decodeFileFromBuffer(buf, bufSize, &original, inputFiletype, &width, &height, JCS_RGB);
-    if (!originalSize) {
+    if (!originalSize)
+    {
         fprintf(stderr, "invalid input file: %s\n", cmd.argv[0]);
         return 1;
     }
 
-    if (defishStrength) {
+    if (defishStrength)
+    {
         info("Defishing...\n");
         tmpImage = malloc(width * height * 3);
         defish(original, tmpImage, width, height, 3, defishStrength, defishZoom);
@@ -334,13 +366,17 @@ int main (int argc, char **argv) {
     // Convert RGB input into Y
     originalGraySize = grayscale(original, &originalGray, width, height);
 
-    if (inputFiletype == FILETYPE_JPEG) {
+    if (inputFiletype == FILETYPE_JPEG)
+    {
         // Read metadata (EXIF / IPTC / XMP tags)
-        if (getMetadata(buf, bufSize, &metaBuf, &metaSize, COMMENT)) {
-            if (copyFiles) {
+        if (getMetadata(buf, bufSize, &metaBuf, &metaSize, COMMENT))
+        {
+            if (copyFiles)
+            {
                 info("File already processed by jpeg-recompress!\n");
                 file = openOutput(outputPath);
-                if (file == NULL) {
+                if (file == NULL)
+                {
                     fprintf(stderr, "Could not open output file.");
                     return 1;
                 }
@@ -359,7 +395,8 @@ int main (int argc, char **argv) {
         }
     }
 
-    if (strip) {
+    if (strip)
+    {
         // Pretend we have no metadata
         metaSize = 0;
     } else {
@@ -368,7 +405,8 @@ int main (int argc, char **argv) {
 
     if (!originalSize || !originalGraySize) { return 1; }
 
-    if (jpegMin > jpegMax) {
+    if (jpegMin > jpegMax)
+    {
         fprintf(stderr, "Maximum JPEG quality must not be smaller than minimum JPEG quality!\n");
         return 1;
     }
@@ -376,8 +414,9 @@ int main (int argc, char **argv) {
     // Do a binary search to find the optimal encoding quality for the
     // given target SSIM value.
     int min = jpegMin, max = jpegMax;
-    for (int attempt = attempts - 1; attempt >= 0; --attempt) {
-        float metric;
+    for (int attempt = attempts - 1; attempt >= 0; --attempt)
+    {
+        float metric, umetric;
         int quality = min + (max - min) / 2;
         int progressive = attempt ? 0 : !noProgressive;
         int optimize = accurate ? 1 : (attempt ? 0 : 1);
@@ -388,62 +427,85 @@ int main (int argc, char **argv) {
         // Load compressed luma for quality comparison
         compressedGraySize = decodeJpeg(compressed, compressedSize, &compressedGray, &width, &height, JCS_GRAYSCALE);
 
-        if (!compressedGraySize) {
+        if (!compressedGraySize)
+        {
           fprintf(stderr, "Unable to decode file that was just encoded!\n");
           return 1;
         }
 
-        if (!attempt) {
+        if (!attempt)
+        {
             info("Final optimized ");
         }
 
         // Measure quality difference
-        switch (method) {
+        switch (method)
+        {
+            case SSIM:
+                metric = iqa_ssim(originalGray, compressedGray, width, height, width, 0, 0);
+                umetric = RescaleMetric(method, metric);
+                info("ssim");
+                break;
             case MS_SSIM:
                 metric = iqa_ms_ssim(originalGray, compressedGray, width, height, width, 0);
+                umetric = RescaleMetric(method, metric);
                 info("ms-ssim");
                 break;
             case SMALLFRY:
                 metric = smallfry_metric(originalGray, compressedGray, width, height);
+                umetric = RescaleMetric(method, metric);
                 info("smallfry");
-                break;
-            case SSIMFRY:
-                metric = smallfry_metric(originalGray, compressedGray, width, height);
-                metric *= 0.0002;
-                metric += iqa_ssim(originalGray, compressedGray, width, height, width, 0, 0);
-                info("ssimfry");
                 break;
             case SHARPENBAD:
                 metric = sharpenbad_metric(originalGray, compressedGray, width, height);
+                umetric = RescaleMetric(method, metric);
                 info("sharpenbad");
                 break;
             case MPE:
                 metric = meanPixelError(originalGray, compressedGray, width, height, 1);
+                umetric = RescaleMetric(method, metric);
                 info("mpe");
                 break;
-            case SSIM: default:
+            case SSIMFRY:
                 metric = iqa_ssim(originalGray, compressedGray, width, height, width, 0, 0);
-                info("ssim");
+                umetric = RescaleMetric(SSIM, metric);
+                metric = smallfry_metric(originalGray, compressedGray, width, height);
+                umetric += RescaleMetric(SMALLFRY, metric);
+                umetric /= 2.0;
+                info("ssimfry");
+                break;
+            case SUMMET: default:
+                metric = iqa_ssim(originalGray, compressedGray, width, height, width, 0, 0);
+                umetric = RescaleMetric(SSIM, metric);
+                metric = smallfry_metric(originalGray, compressedGray, width, height);
+                umetric += RescaleMetric(SMALLFRY, metric);
+                metric = sharpenbad_metric(originalGray, compressedGray, width, height);
+                umetric += RescaleMetric(SHARPENBAD, metric);
+                umetric /= 3.0;
+                info("sum");
                 break;
         }
-        metric *= kametric;
-        metric += kbmetric;
 
-        if (attempt) {
-            info(" at q=%i (%i - %i): UM %f\n", quality, min, max, metric);
+        if (attempt)
+        {
+            info(" at q=%i (%i - %i): UM %f\n", quality, min, max, umetric);
         } else {
-            info(" at q=%i: UM %f\n", quality, metric);
+            info(" at q=%i: UM %f\n", quality, umetric);
         }
 
-        if (metric < target) {
-            if (compressedSize >= bufSize) {
+        if (umetric < target)
+        {
+            if (compressedSize >= bufSize)
+            {
                 free(compressed);
                 free(compressedGray);
 
-                if (copyFiles) {
+                if (copyFiles)
+                {
                     info("Output file would be larger than input!\n");
                     file = openOutput(cmd.argv[1]);
-                    if (file == NULL) {
+                    if (file == NULL)
+                    {
                         fprintf(stderr, "Could not open output file.");
                         return 1;
                     }
@@ -467,7 +529,8 @@ int main (int argc, char **argv) {
         }
 
         // If we aren't done yet, then free the image data
-        if (attempt) {
+        if (attempt)
+        {
             free(compressed);
             free(compressedGray);
         }
@@ -480,26 +543,30 @@ int main (int argc, char **argv) {
     unsigned long saved = (bufSize > compressedSize) ? bufSize - compressedSize - metaSize : 0;
     info("New size is %i%% of original (saved %lu kb)\n", percent, saved / 1024);
 
-    if (compressedSize >= bufSize) {
+    if (compressedSize >= bufSize)
+    {
         fprintf(stderr, "Output file is larger than input, aborting!\n");
         return 1;
     }
 
     // Open output file for writing
     file = openOutput(cmd.argv[1]);
-    if (file == NULL) {
+    if (file == NULL)
+    {
         fprintf(stderr, "Could not open output file.");
         return 1;
     }
 
     /* Check that the metadata starts with a SOI marker. */
-    if (!checkJpegMagic(compressed, compressedSize)) {
+    if (!checkJpegMagic(compressed, compressedSize))
+    {
         fprintf(stderr, "Missing SOI marker, aborting!\n");
         return 1;
     }
 
     /* Make sure APP0 is recorded immediately after the SOI marker. */
-    if (compressed[2] != 0xff || compressed[3] != 0xe0) {
+    if (compressed[2] != 0xff || compressed[3] != 0xe0)
+    {
         fprintf(stderr, "Missing APP0 marker, aborting!\n");
         return 1;
     }
@@ -519,7 +586,8 @@ int main (int argc, char **argv) {
     fwrite(COMMENT, strlen(COMMENT), 1, file);
 
     /* Write additional metadata markers. */
-    if (inputFiletype == FILETYPE_JPEG && !strip) {
+    if (inputFiletype == FILETYPE_JPEG && !strip)
+    {
         fwrite(metaBuf, metaSize, 1, file);
     }
 
@@ -530,7 +598,8 @@ int main (int argc, char **argv) {
     /* Cleanup. */
     command_free(&cmd);
 
-    if (inputFiletype == FILETYPE_JPEG && !strip) {
+    if (inputFiletype == FILETYPE_JPEG && !strip)
+    {
         free(metaBuf);
     }
 
