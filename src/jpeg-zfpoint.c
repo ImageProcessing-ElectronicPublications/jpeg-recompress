@@ -1,5 +1,5 @@
 /*
-    Recompress a JPEG file while attempting to keep visual quality the same
+    Find ZF point of compress a JPEG file while attempting to keep visual quality the same
     by using structural similarity (SSIM) as a metric. Does a binary search
     between JPEG quality 40 and 95 to find the best match. Also makes sure
     that huffman tables are optimized if they weren't already.
@@ -21,42 +21,15 @@
     #include <fcntl.h>
 #endif
 
-const char *COMMENT = "Compressed by jpeg-recompress";
-
-// Comparison method
-enum METHOD
-{
-    UNKNOWN,
-    MPE,
-    SSIM,
-    MS_SSIM,
-    SMALLFRY,
-    SSIMFRY,
-    SHARPENBAD,
-    SSIMSHBAD,
-    SUMMET
-};
-
-int method = SUMMET;
+const char *COMMENT = "Compressed by jpeg-fzpoint";
 
 // Number of binary search steps
 int attempts = 6;
 
-// Target quality (SSIM) value
-enum QUALITY_PRESET 
-{
-    LOW,
-    MEDIUM,
-    HIGH,
-    VERYHIGH
-};
-
-float target = 0.0;
-int preset = MEDIUM;
-
 // Min/max JPEG quality
 int jpegMin = 40;
-int jpegMax = 98;
+int jpegMax = 100;
+int shRadius = 2;
 
 // Strip metadata from the file?
 int strip = 0;
@@ -88,49 +61,6 @@ static void setAttempts(command_t *self)
     attempts = atoi(self->arg);
 }
 
-static void setTarget(command_t *self)
-{
-    target = atof(self->arg);
-}
-
-static void setQuality(command_t *self)
-{
-    if (!strcmp("low", self->arg)) {
-        preset = LOW;
-    } else if (!strcmp("medium", self->arg)) {
-        preset = MEDIUM;
-    } else if (!strcmp("high", self->arg)) {
-        preset = HIGH;
-    } else if (!strcmp("veryhigh", self->arg)) {
-        preset = VERYHIGH;
-    } else {
-        fprintf(stderr, "Unknown quality preset '%s'!\n", self->arg);
-    }
-}
-
-static void setMethod(command_t *self)
-{
-    if (!strcmp("mpe", self->arg)) {
-        method = MPE;
-    } else if (!strcmp("ssim", self->arg)) {
-        method = SSIM;
-    } else if (!strcmp("ms-ssim", self->arg)) {
-        method = MS_SSIM;
-    } else if (!strcmp("smallfry", self->arg)) {
-        method = SMALLFRY;
-    } else if (!strcmp("ssimfry", self->arg)) {
-        method = SSIMFRY;
-    } else if (!strcmp("shbad", self->arg)) {
-        method = SHARPENBAD;
-    } else if (!strcmp("ssimshb", self->arg)) {
-        method = SSIMSHBAD;
-    } else if (!strcmp("sum", self->arg)) {
-        method = SUMMET;
-    } else {
-        method = UNKNOWN;
-    }
-}
-
 static void setNoProgressive(command_t *self)
 {
     noProgressive = 1;
@@ -144,6 +74,11 @@ static void setMinimum(command_t *self)
 static void setMaximum(command_t *self)
 {
     jpegMax = atoi(self->arg);
+}
+
+static void setRadius(command_t *self)
+{
+    shRadius = atoi(self->arg);
 }
 
 static void setStrip(command_t *self)
@@ -186,53 +121,6 @@ static void setCopyFiles(command_t *self)
 static void setAccurate(command_t *self)
 {
     accurate = 1;
-}
-
-static void setTargetFromPreset()
-{
-    switch (preset) {
-        case LOW:
-            target = 0.5;
-            break;
-        case MEDIUM:
-            target = 0.76;
-            break;
-        case HIGH:
-            target = 0.93;
-            break;
-        case VERYHIGH:
-            target = 0.99;
-            break;
-    }
-}
-static float RescaleMetric(int currentmethod, float value)
-{
-    float kametric = 1.0;
-    float kbmetric = 0.0;
-    switch (currentmethod) {
-        case MPE:
-            kametric = -1.16;
-            kbmetric = 1.94;
-            value = sqrt(value);
-            break;
-        case SSIM:
-            kametric = 251.0;
-            kbmetric = -250.0;
-            value *= value;
-            break;
-        case MS_SSIM:
-            kametric = 2.08;
-            kbmetric = -1.0;
-            value *= value;
-            break;
-        case SMALLFRY:
-            kametric = 0.105;
-            kbmetric = -10.0;
-            break;
-    }
-    value *= kametric;
-    value += kbmetric;
-    return value;
 }
 
 static void setSubsampling(command_t *self)
@@ -299,13 +187,11 @@ int main (int argc, char **argv)
     command_t cmd;
     command_init(&cmd, argv[0], VERSION);
     cmd.usage = "[options] input.jpg compressed-output.jpg";
-    command_option(&cmd, "-t", "--target [arg]", "Set target quality [0.76]", setTarget);
-    command_option(&cmd, "-q", "--quality [arg]", "Set a quality preset: low, medium, high, veryhigh [medium]", setQuality);
-    command_option(&cmd, "-n", "--min [arg]", "Minimum JPEG quality [40]", setMinimum);
-    command_option(&cmd, "-x", "--max [arg]", "Maximum JPEG quality [98]", setMaximum);
+    command_option(&cmd, "-n", "--min [arg]", "Minimum JPEG quality [2]", setMinimum);
+    command_option(&cmd, "-x", "--max [arg]", "Maximum JPEG quality [100]", setMaximum);
+    command_option(&cmd, "-A", "--radius [arg]", "Sharpen radius [2]", setRadius);
     command_option(&cmd, "-l", "--loops [arg]", "Set the number of runs to attempt [6]", setAttempts);
     command_option(&cmd, "-a", "--accurate", "Favor accuracy over speed", setAccurate);
-    command_option(&cmd, "-m", "--method [arg]", "Set comparison method to one of 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry', 'shbad', 'ssimshb', 'sum' [sum]", setMethod);
     command_option(&cmd, "-s", "--strip", "Strip metadata", setStrip);
     command_option(&cmd, "-d", "--defish [arg]", "Set defish strength [0.0]", setDefish);
     command_option(&cmd, "-z", "--zoom [arg]", "Set defish zoom [1.0]", setZoom);
@@ -321,19 +207,6 @@ int main (int argc, char **argv)
     {
         command_help(&cmd);
         return 255;
-    }
-
-    if (method == UNKNOWN)
-    {
-        fprintf(stderr, "Invalid method!");
-        command_help(&cmd);
-        return 255;
-    }
-
-    // No target passed, use preset!
-    if (!target)
-    {
-        setTargetFromPreset();
     }
     
     char *inputPath = (char *) cmd.argv[0];
@@ -391,7 +264,7 @@ int main (int argc, char **argv)
 
                 return 0;
             } else {
-                fprintf(stderr, "File already processed by jpeg-recompress!\n");
+                fprintf(stderr, "File already processed by jpeg-zfpoint!\n");
                 free(buf);
                 return 2;
             }
@@ -417,9 +290,20 @@ int main (int argc, char **argv)
     // Do a binary search to find the optimal encoding quality for the
     // given target SSIM value.
     int min = jpegMin, max = jpegMax;
+    float metric, maxmetric, qmetric, cmpMin, cmpMax, cmpQ;
+    compressedSize = encodeJpeg(&compressed, original, width, height, JCS_RGB, max, 0, 1, subsample);
+    compressedGraySize = decodeJpeg(compressed, compressedSize, &compressedGray, &width, &height, JCS_GRAYSCALE);
+    maxmetric = metric_corsharp(originalGray, compressedGray, width, height, shRadius);
+    maxmetric = cor_sigma(maxmetric);
+    qmetric = maxmetric / (float)max;
+    cmpMax = 0;
+    compressedSize = encodeJpeg(&compressed, original, width, height, JCS_RGB, min, 0, 1, subsample);
+    compressedGraySize = decodeJpeg(compressed, compressedSize, &compressedGray, &width, &height, JCS_GRAYSCALE);
+    metric = metric_corsharp(originalGray, compressedGray, width, height, shRadius);
+    metric = cor_sigma(metric);
+    cmpMin = qmetric * (float)min - metric;
     for (int attempt = attempts - 1; attempt >= 0; --attempt)
     {
-        float metric, umetric;
         int quality = min + (max - min) / 2;
         int progressive = attempt ? 0 : !noProgressive;
         int optimize = accurate ? 1 : (attempt ? 0 : 1);
@@ -442,101 +326,25 @@ int main (int argc, char **argv)
         }
 
         // Measure quality difference
-        switch (method)
-        {
-            case MPE:
-                metric = meanPixelError(originalGray, compressedGray, width, height, 1);
-                umetric = RescaleMetric(method, metric);
-                info("mpe");
-                break;
-            case SSIM:
-                metric = iqa_ssim(originalGray, compressedGray, width, height, width, 0, 0);
-                umetric = RescaleMetric(method, metric);
-                info("ssim");
-                break;
-            case MS_SSIM:
-                metric = iqa_ms_ssim(originalGray, compressedGray, width, height, width, 0);
-                umetric = RescaleMetric(method, metric);
-                info("ms-ssim");
-                break;
-            case SMALLFRY:
-                metric = metric_smallfry(originalGray, compressedGray, width, height);
-                umetric = RescaleMetric(method, metric);
-                info("smallfry");
-                break;
-            case SHARPENBAD:
-                metric = metric_sharpenbad(originalGray, compressedGray, width, height);
-                umetric = RescaleMetric(method, metric);
-                info("sharpenbad");
-                break;
-            case SSIMFRY:
-                metric = iqa_ssim(originalGray, compressedGray, width, height, width, 0, 0);
-                umetric = RescaleMetric(SSIM, metric);
-                metric = metric_smallfry(originalGray, compressedGray, width, height);
-                umetric += RescaleMetric(SMALLFRY, metric);
-                umetric /= 2.0;
-                info("ssimfry");
-                break;
-            case SSIMSHBAD:
-                metric = iqa_ssim(originalGray, compressedGray, width, height, width, 0, 0);
-                umetric = RescaleMetric(SSIM, metric);
-                metric = metric_sharpenbad(originalGray, compressedGray, width, height);
-                umetric += RescaleMetric(SHARPENBAD, metric);
-                umetric /= 2.0;
-                info("ssimshbad");
-                break;
-            case SUMMET: default:
-                metric = iqa_ssim(originalGray, compressedGray, width, height, width, 0, 0);
-                umetric = RescaleMetric(SSIM, metric);
-                metric = metric_smallfry(originalGray, compressedGray, width, height);
-                umetric += RescaleMetric(SMALLFRY, metric);
-                metric = metric_sharpenbad(originalGray, compressedGray, width, height);
-                umetric += RescaleMetric(SHARPENBAD, metric);
-                umetric /= 3.0;
-                info("sum");
-                break;
-        }
+        metric = metric_corsharp(originalGray, compressedGray, width, height, shRadius);
+        metric = cor_sigma(metric);
+        cmpQ = qmetric * (float)quality - metric;
+        info("zfpoint");
 
         if (attempt)
         {
-            info(" at q=%i (%i - %i): UM %f\n", quality, min, max, umetric);
+            info(" at q=%i (%i - %i): dM %f\n", quality, min, max, cmpQ);
         } else {
-            info(" at q=%i: UM %f\n", quality, umetric);
+            info(" at q=%i: dM %f\n", quality, cmpQ);
         }
 
-        if (umetric < target)
+        if (cmpMin < cmpMax)
         {
-            if (compressedSize >= bufSize)
-            {
-                free(compressed);
-                free(compressedGray);
-
-                if (copyFiles)
-                {
-                    info("Output file would be larger than input!\n");
-                    file = openOutput(cmd.argv[1]);
-                    if (file == NULL)
-                    {
-                        fprintf(stderr, "Could not open output file.");
-                        return 1;
-                    }
-
-                    fwrite(buf, bufSize, 1, file);
-                    fclose(file);
-
-                    free(buf);
-
-                    return 0;
-                } else {
-                    fprintf(stderr, "Output file would be larger than input!\n");
-                    free(buf);
-                    return 1;
-                }
-            }
-
             min = MIN(quality + 1, max);
+            cmpMin = cmpQ;
         } else {
             max = MAX(quality - 1, min);
+            cmpMax = cmpQ;
         }
 
         // If we aren't done yet, then free the image data

@@ -28,7 +28,7 @@ else
 	CFLAGS += -I../mozjpeg
 endif
 
-all: jpeg-recompress jpeg-compare jpeg-hash
+all: jpeg-recompress jpeg-compare jpeg-hash jpeg-zfpoint
 
 jpeg-recompress: src/jpeg-recompress.c src/util.o src/edit.o src/commander.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBJPEG) $(LIBIQA) $(LIBSFRY) $(LDFLAGS)
@@ -38,6 +38,9 @@ jpeg-compare: src/jpeg-compare.c src/util.o src/hash.o src/edit.o src/commander.
 
 jpeg-hash: src/jpeg-hash.c src/util.o src/hash.o src/commander.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBJPEG) $(LDFLAGS)
+
+jpeg-zfpoint: src/jpeg-zfpoint.c src/util.o src/edit.o src/commander.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBJPEG) $(LIBIQA) $(LIBSFRY) $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -51,8 +54,9 @@ install: all
 	$(INSTALL) -m 0755 jpeg-recompress $(PREFIX)/bin/
 	$(INSTALL) -m 0755 jpeg-compare $(PREFIX)/bin/
 	$(INSTALL) -m 0755 jpeg-hash $(PREFIX)/bin/
+	$(INSTALL) -m 0755 jpeg-zfpoint $(PREFIX)/bin/
 
 clean:
-	rm -rf jpeg-recompress jpeg-compare jpeg-hash test/test src/*.o
+	rm -rf jpeg-recompress jpeg-compare jpeg-hash jpeg-zfpoint test/test src/*.o
 
 .PHONY: test install clean

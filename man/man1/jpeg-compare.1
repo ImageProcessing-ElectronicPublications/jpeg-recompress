@@ -1,4 +1,4 @@
-.TH "Jpeg-archive User Manual" 2.1.2 "18 Jun 2018" "User documentation"
+.TH "Jpeg-archive User Manual" 2.2 "11 Dec 2018" "User documentation"
 .SH NAME
 jpeg-compare
 .SH DESCRIPTION
@@ -19,7 +19,10 @@ output program help
 set fast comparison image hash size
 .TP
 \fB\-m\fR, \fB\-\-method\fR [arg]
-set comparison method to one of 'fast', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad' [fast]
+set comparison method to one of 'fast', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'cor', 'corsh' [fast]
+.TP
+\fB\-A\fR, \fB\-\-radius\fR [arg]
+set aperture size (for corsh)
 .TP
 \fB\-r\fR, \fB\-\-ppm\fR
 parse first input as PPM instead of JPEG
@@ -55,5 +58,8 @@ jpeg-compare --method ssim image1.jpg image2.jpg
 .SH "SEE ALSO"
  jpeg-hash,
  jpeg-recompress,
- mozcjpeg
+ jpeg-zfpoint,
+ mozcjpeg,
+ cjpeg
+
 

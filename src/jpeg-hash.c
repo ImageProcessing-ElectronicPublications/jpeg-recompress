@@ -15,11 +15,13 @@ static const char *progname = "jpeg-hash";
 
 int size = 16;
 
-void version(void) {
+void version(void)
+{
     printf("%s\n", VERSION);
 }
 
-void usage(void) {
+void usage(void)
+{
     printf("usage: %s [options] image.jpg\n\n", progname);
     printf("options:\n\n");
     printf("  -V, --version                output program version\n");
@@ -27,7 +29,8 @@ void usage(void) {
     printf("  -s, --size [arg]             set fast comparison image hash size\n");
 }
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+{
     unsigned char *hash;
 
     const char *optstring = "Vhs:";
@@ -39,33 +42,38 @@ int main (int argc, char **argv) {
     };
     int opt, longind = 0;
 
-    while ((opt = getopt_long(argc, argv, optstring, opts, &longind)) != -1) {
-        switch (opt) {
-        case 'V':
-            version();
-            return 0;
-        case 'h':
-            usage();
-            return 0;
-        case 's':
-            size = atoi(optarg);
-            break;
+    while ((opt = getopt_long(argc, argv, optstring, opts, &longind)) != -1)
+    {
+        switch (opt)
+        {
+            case 'V':
+                version();
+                return 0;
+            case 'h':
+                usage();
+                return 0;
+            case 's':
+                size = atoi(optarg);
+                break;
         };
     }
 
-    if (argc - optind != 1) {
+    if (argc - optind != 1)
+    {
         usage();
         return 255;
     }
 
     // Generate the image hash
-    if (jpegHash(argv[optind], &hash, size)) {
+    if (jpegHash(argv[optind], &hash, size))
+    {
         printf("Error hashing image!\n");
         return 1;
     }
 
     // Print out the hash a string of 1s and 0s
-    for (int x = 0; x < size * size; x++) {
+    for (int x = 0; x < size * size; x++)
+    {
         printf("%c", hash[x] ? '1' : '0');
     }
     printf("\n");

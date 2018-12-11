@@ -30,20 +30,24 @@
 static const char *progname = "jpeg-compare";
 
 // Comparison method
-enum METHOD {
+enum METHOD
+{
     UNKNOWN,
     FAST,
     PSNR,
     SSIM,
     MS_SSIM,
     SMALLFRY,
-    SHARPENBAD
+    SHARPENBAD,
+    COR,
+    CORSHARP
 };
 
 int method = FAST;
 
 /* Long command line options. */
-enum longopts {
+enum longopts
+{
     OPT_SHORT = 1000
 };
 
@@ -51,12 +55,14 @@ int printPrefix = 1;
 
 // Hash size when method is FAST
 int size = 16;
+int radius = 2;
 
 // Use PPM input?
 enum filetype inputFiletype1 = FILETYPE_AUTO;
 enum filetype inputFiletype2 = FILETYPE_AUTO;
 
-static enum METHOD parseMethod(const char *s) {
+static enum METHOD parseMethod(const char *s)
+{
     if (!strcmp("fast", s))
         return FAST;
     if (!strcmp("psnr", s))
@@ -69,10 +75,15 @@ static enum METHOD parseMethod(const char *s) {
         return SMALLFRY;
     if (!strcmp("shbad", s))
         return SHARPENBAD;
+    if (!strcmp("cor", s))
+        return COR;
+    if (!strcmp("corsh", s))
+        return CORSHARP;
     return UNKNOWN;
 }
 
-static enum filetype parseInputFiletype(const char *s) {
+static enum filetype parseInputFiletype(const char *s)
+{
     if (!strcmp("auto", s))
         return FILETYPE_AUTO;
     if (!strcmp("jpeg", s))
@@ -82,16 +93,19 @@ static enum filetype parseInputFiletype(const char *s) {
     return FILETYPE_UNKNOWN;
 }
 
-int compareFastFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2) {
+int compareFastFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2)
+{
     unsigned char *hash1, *hash2;
 
     // Generate hashes
-    if (jpegHashFromBuffer(imageBuf1, bufSize1, &hash1, size)) {
+    if (jpegHashFromBuffer(imageBuf1, bufSize1, &hash1, size))
+    {
         printf("Error hashing image 1!\n");
         return 1;
     }
 
-    if (jpegHashFromBuffer(imageBuf2, bufSize2, &hash2, size)) {
+    if (jpegHashFromBuffer(imageBuf2, bufSize2, &hash2, size))
+    {
         printf("Error hashing image 2!\n");
         return 1;
     }
@@ -106,14 +120,16 @@ int compareFastFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char
     return 0;
 }
 
-int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2) {
+int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2)
+{
     unsigned char *image1, *image2, *image1Gray = NULL, *image2Gray = NULL;
     int width1, width2, height1, height2;
     int format, components;
     float diff;
 
     // Set requested pixel format
-    switch (method) {
+    switch (method)
+    {
         case PSNR:
             format = JCS_RGB;
             components = 3;
@@ -125,36 +141,42 @@ int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *im
     }
 
     // Decode files
-    if (!decodeFileFromBuffer(imageBuf1, bufSize1, &image1, inputFiletype1, &width1, &height1, format)) {
+    if (!decodeFileFromBuffer(imageBuf1, bufSize1, &image1, inputFiletype1, &width1, &height1, format))
+    {
         fprintf(stderr, "invalid input reference file\n");
         return 1;
     }
 
-    if (1 == components && FILETYPE_PPM == inputFiletype2) {
+    if (1 == components && FILETYPE_PPM == inputFiletype2)
+    {
         grayscale(image1, &image1Gray, width1, height1);
         free(image1);
         image1 = image1Gray;
     }
 
-    if (!decodeFileFromBuffer(imageBuf2, bufSize2, &image2, inputFiletype2, &width2, &height2, format)) {
+    if (!decodeFileFromBuffer(imageBuf2, bufSize2, &image2, inputFiletype2, &width2, &height2, format))
+    {
         fprintf(stderr, "invalid input query file\n");
         return 1;
     }
 
-    if (1 == components && FILETYPE_PPM == inputFiletype2) {
+    if (1 == components && FILETYPE_PPM == inputFiletype2)
+    {
         grayscale(image2, &image2Gray, width2, height2);
         free(image2);
         image2 = image2Gray;
     }
 
     // Ensure width/height are equal
-    if (width1 != width2 || height1 != height2) {
+    if (width1 != width2 || height1 != height2)
+    {
         printf("Images must be identical sizes for selected method!\n");
         return 1;
     }
 
     // Calculate and print comparison
-    switch (method) {
+    switch (method)
+    {
         case PSNR:
             diff = iqa_psnr(image1, image2, width1, height1, width1 * components);
             if (printPrefix)
@@ -162,15 +184,27 @@ int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *im
             printf("%f\n", diff);
             break;
         case SMALLFRY:
-            diff = smallfry_metric(image1, image2, width1, height1);
+            diff = metric_smallfry(image1, image2, width1, height1);
             if (printPrefix)
                 printf("SMALLFRY: ");
             printf("%f\n", diff);
             break;
         case SHARPENBAD:
-            diff = sharpenbad_metric(image1, image2, width1, height1);
+            diff = metric_sharpenbad(image1, image2, width1, height1);
             if (printPrefix)
                 printf("SHARPENBAD: ");
+            printf("%f\n", diff);
+            break;
+        case COR:
+            diff = metric_cor(image1, image2, width1, height1);
+            if (printPrefix)
+                printf("COR: ");
+            printf("%f\n", diff);
+            break;
+        case CORSHARP:
+            diff = metric_corsharp(image1, image2, width1, height1, radius);
+            if (printPrefix)
+                printf("CORSHARP: ");
             printf("%f\n", diff);
             break;
         case MS_SSIM:
@@ -194,30 +228,35 @@ int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *im
     return 0;
 }
 
-void version(void) {
+void version(void)
+{
     printf("%s\n", VERSION);
 }
 
-void usage(void) {
+void usage(void)
+{
     printf("usage: %s [options] image1.jpg image2.jpg\n\n", progname);
     printf("options:\n\n");
     printf("  -V, --version                output program version\n");
     printf("  -h, --help                   output program help\n");
     printf("  -s, --size [arg]             set fast comparison image hash size\n");
-    printf("  -m, --method [arg]           set comparison method to one of 'fast', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad' [fast]\n");
+    printf("  -m, --method [arg]           set comparison method to one of 'fast', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'cor', 'corsh' [fast]\n");
+    printf("  -A, --radius [arg]           set aperture size (for corsh)\n");
     printf("  -r, --ppm                    parse first input as PPM instead of JPEG\n");
     printf("  -T, --input-filetype [arg]   set first input file type to one of 'auto', 'jpeg', 'ppm' [auto]\n");
     printf("  -U, --second-filetype [arg]  set second input file type to one of 'auto', 'jpeg', 'ppm' [auto]\n");
     printf("      --short                  do not prefix output with the name of the used method\n");
 }
 
-int main (int argc, char **argv) {
-    const char *optstring = "VhS:m:rT:U:";
+int main (int argc, char **argv)
+{
+    const char *optstring = "VhS:m:A:rT:U:";
     static const struct option opts[] = {
         { "version", no_argument, 0, 'V' },
         { "help", no_argument, 0, 'h' },
         { "size", required_argument, 0, 'S' },
         { "method", required_argument, 0, 'm' },
+        { "radius", required_argument, 0, 'A' },
         { "ppm", no_argument, 0, 'r' },
         { "input-filetype", required_argument, 0, 'T' },
         { "second-filetype", required_argument, 0, 'U' },
@@ -226,36 +265,42 @@ int main (int argc, char **argv) {
     };
     int opt, longind = 0;
 
-    while ((opt = getopt_long(argc, argv, optstring, opts, &longind)) != -1) {
-        switch (opt) {
-        case 'V':
-            version();
-            return 0;
-        case 'h':
-            usage();
-            return 0;
-        case 's':
-            size = atoi(optarg);
-            break;
-        case 'm':
-            method = parseMethod(optarg);
-            break;
-        case 'r':
-            inputFiletype1 = FILETYPE_PPM;
-            break;
-        case 'T':
-            inputFiletype1 = parseInputFiletype(optarg);
-            break;
-        case 'U':
-            inputFiletype2 = parseInputFiletype(optarg);
-            break;
-        case OPT_SHORT:
-            printPrefix = 0;
-            break;
+    while ((opt = getopt_long(argc, argv, optstring, opts, &longind)) != -1)
+    {
+        switch (opt)
+        {
+            case 'V':
+                version();
+                return 0;
+            case 'h':
+                usage();
+                return 0;
+            case 's':
+                size = atoi(optarg);
+                break;
+            case 'm':
+                method = parseMethod(optarg);
+                break;
+            case 'A':
+                radius = atoi(optarg);
+                break;
+            case 'r':
+                inputFiletype1 = FILETYPE_PPM;
+                break;
+            case 'T':
+                inputFiletype1 = parseInputFiletype(optarg);
+                break;
+            case 'U':
+                inputFiletype2 = parseInputFiletype(optarg);
+                break;
+            case OPT_SHORT:
+                printPrefix = 0;
+                break;
         };
     }
 
-    if (argc - optind != 2) {
+    if (argc - optind != 2)
+    {
         usage();
         return 255;
     }
@@ -268,13 +313,15 @@ int main (int argc, char **argv) {
     char *fileName2 = argv[optind + 1];
 
     bufSize1 = readFile(fileName1, &imageBuf1);
-    if (!bufSize1) {
+    if (!bufSize1)
+    {
         fprintf(stderr, "failed to read file: %s\n", fileName1);
         return 1;
     }
 
     bufSize2 = readFile(fileName2, &imageBuf2);
-    if (!bufSize2) {
+    if (!bufSize2)
+    {
         fprintf(stderr, "failed to read file: %s\n", fileName2);
         return 1;
     }
@@ -286,9 +333,11 @@ int main (int argc, char **argv) {
         inputFiletype2 = detectFiletypeFromBuffer(imageBuf2, bufSize2);
 
     // Calculate and print output
-    switch (method) {
+    switch (method)
+    {
         case FAST:
-            if (inputFiletype1 != FILETYPE_JPEG || inputFiletype2 != FILETYPE_JPEG) {
+            if (inputFiletype1 != FILETYPE_JPEG || inputFiletype2 != FILETYPE_JPEG)
+            {
                 printf("fast comparison only works with JPEG files!\n");
                 return 255;
             }
@@ -298,6 +347,8 @@ int main (int argc, char **argv) {
         case MS_SSIM:
         case SMALLFRY:
         case SHARPENBAD:
+        case COR:
+        case CORSHARP:
             return compareFromBuffer(imageBuf1, bufSize1, imageBuf2, bufSize2);
         default:
             printf("Unknown comparison method!\n");
