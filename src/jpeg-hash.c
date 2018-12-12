@@ -11,14 +11,7 @@
 #include "hash.h"
 #include "util.h"
 
-static const char *progname = "jpeg-hash";
-
 int size = 16;
-
-void version(void)
-{
-    printf("%s\n", VERSION);
-}
 
 void usage(void)
 {
@@ -41,6 +34,8 @@ int main (int argc, char **argv)
         { 0, 0, 0, 0 }
     };
     int opt, longind = 0;
+
+    progname = "jpeg-hash";
 
     while ((opt = getopt_long(argc, argv, optstring, opts, &longind)) != -1)
     {
@@ -67,7 +62,7 @@ int main (int argc, char **argv)
     // Generate the image hash
     if (jpegHash(argv[optind], &hash, size))
     {
-        printf("Error hashing image!\n");
+        error("error hashing image!");
         return 1;
     }
 

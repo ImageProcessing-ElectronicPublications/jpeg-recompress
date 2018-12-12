@@ -30,16 +30,16 @@ endif
 
 all: jpeg-recompress jpeg-compare jpeg-hash jpeg-zfpoint
 
-jpeg-recompress: src/jpeg-recompress.c src/util.o src/edit.o src/commander.o
+jpeg-recompress: src/jpeg-recompress.c src/util.o src/edit.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBJPEG) $(LIBIQA) $(LIBSFRY) $(LDFLAGS)
 
-jpeg-compare: src/jpeg-compare.c src/util.o src/hash.o src/edit.o src/commander.o
+jpeg-compare: src/jpeg-compare.c src/util.o src/hash.o src/edit.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBJPEG) $(LIBIQA) $(LIBSFRY) $(LDFLAGS)
 
-jpeg-hash: src/jpeg-hash.c src/util.o src/hash.o src/commander.o
+jpeg-hash: src/jpeg-hash.c src/util.o src/hash.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBJPEG) $(LDFLAGS)
 
-jpeg-zfpoint: src/jpeg-zfpoint.c src/util.o src/edit.o src/commander.o
+jpeg-zfpoint: src/jpeg-zfpoint.c src/util.o src/edit.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBJPEG) $(LIBIQA) $(LIBSFRY) $(LDFLAGS)
 
 %.o: %.c %.h

@@ -12,6 +12,7 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 const char *VERSION;
+const char *progname;
 
 // Subsampling method, which defines how much of the data from
 // each color channel is included in the image per 2x2 block.
@@ -33,6 +34,12 @@ enum filetype {
     FILETYPE_JPEG,
     FILETYPE_PPM
 };
+
+/* Print program version to stdout. */
+void version(void);
+
+/* Print an error message. */
+void error(const char *format, ...);
 
 /*
     Read a file into a buffer and return the length.

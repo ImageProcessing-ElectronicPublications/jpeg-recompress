@@ -27,8 +27,6 @@
 #include "hash.h"
 #include "util.h"
 
-static const char *progname = "jpeg-compare";
-
 // Comparison method
 enum METHOD
 {
@@ -100,13 +98,13 @@ int compareFastFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char
     // Generate hashes
     if (jpegHashFromBuffer(imageBuf1, bufSize1, &hash1, size))
     {
-        printf("Error hashing image 1!\n");
+        error("error hashing image 1!");
         return 1;
     }
 
     if (jpegHashFromBuffer(imageBuf2, bufSize2, &hash2, size))
     {
-        printf("Error hashing image 2!\n");
+        error("error hashing image 2!");
         return 1;
     }
 
@@ -128,8 +126,7 @@ int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *im
     float diff;
 
     // Set requested pixel format
-    switch (method)
-    {
+    switch (method) {
         case PSNR:
             format = JCS_RGB;
             components = 3;
@@ -143,11 +140,11 @@ int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *im
     // Decode files
     if (!decodeFileFromBuffer(imageBuf1, bufSize1, &image1, inputFiletype1, &width1, &height1, format))
     {
-        fprintf(stderr, "invalid input reference file\n");
+        error("invalid input reference file");
         return 1;
     }
 
-    if (1 == components && FILETYPE_PPM == inputFiletype2)
+    if (1 == components && FILETYPE_PPM == inputFiletype1)
     {
         grayscale(image1, &image1Gray, width1, height1);
         free(image1);
@@ -156,7 +153,7 @@ int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *im
 
     if (!decodeFileFromBuffer(imageBuf2, bufSize2, &image2, inputFiletype2, &width2, &height2, format))
     {
-        fprintf(stderr, "invalid input query file\n");
+        error("invalid input query file");
         return 1;
     }
 
@@ -170,7 +167,7 @@ int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *im
     // Ensure width/height are equal
     if (width1 != width2 || height1 != height2)
     {
-        printf("Images must be identical sizes for selected method!\n");
+        error("images must be identical sizes for selected method!");
         return 1;
     }
 
@@ -228,11 +225,6 @@ int compareFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *im
     return 0;
 }
 
-void version(void)
-{
-    printf("%s\n", VERSION);
-}
-
 void usage(void)
 {
     printf("usage: %s [options] image1.jpg image2.jpg\n\n", progname);
@@ -265,6 +257,8 @@ int main (int argc, char **argv)
     };
     int opt, longind = 0;
 
+    progname = "jpeg-compare";
+
     while ((opt = getopt_long(argc, argv, optstring, opts, &longind)) != -1)
     {
         switch (opt)
@@ -285,12 +279,25 @@ int main (int argc, char **argv)
                 radius = atoi(optarg);
                 break;
             case 'r':
+                if (inputFiletype1 != FILETYPE_AUTO)
+                {
+                    error("multiple file types specified for input file 1");
+                    return 1;
+                }
                 inputFiletype1 = FILETYPE_PPM;
                 break;
             case 'T':
+                if (inputFiletype1 != FILETYPE_AUTO) {
+                    error("multiple file types specified for input file 1");
+                    return 1;
+                }
                 inputFiletype1 = parseInputFiletype(optarg);
                 break;
             case 'U':
+                if (inputFiletype2 != FILETYPE_AUTO) {
+                    error("multiple file types specified for input file 2");
+                    return 1;
+                }
                 inputFiletype2 = parseInputFiletype(optarg);
                 break;
             case OPT_SHORT:
@@ -312,17 +319,17 @@ int main (int argc, char **argv)
     char *fileName1 = argv[optind];
     char *fileName2 = argv[optind + 1];
 
-    bufSize1 = readFile(fileName1, &imageBuf1);
+    bufSize1 = readFile(fileName1, (void **)&imageBuf1);
     if (!bufSize1)
     {
-        fprintf(stderr, "failed to read file: %s\n", fileName1);
+        error("failed to read file: %s", fileName1);
         return 1;
     }
 
-    bufSize2 = readFile(fileName2, &imageBuf2);
+    bufSize2 = readFile(fileName2, (void **)&imageBuf2);
     if (!bufSize2)
     {
-        fprintf(stderr, "failed to read file: %s\n", fileName2);
+        error("failed to read file: %s", fileName2);
         return 1;
     }
 
@@ -338,7 +345,7 @@ int main (int argc, char **argv)
         case FAST:
             if (inputFiletype1 != FILETYPE_JPEG || inputFiletype2 != FILETYPE_JPEG)
             {
-                printf("fast comparison only works with JPEG files!\n");
+                error("fast comparison only works with JPEG files!");
                 return 255;
             }
             return compareFastFromBuffer(imageBuf1, bufSize1, imageBuf2, bufSize2);
@@ -351,7 +358,7 @@ int main (int argc, char **argv)
         case CORSHARP:
             return compareFromBuffer(imageBuf1, bufSize1, imageBuf2, bufSize2);
         default:
-            printf("Unknown comparison method!\n");
+            error("unknown comparison method!");
             return 255;
     }
 

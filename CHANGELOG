@@ -1,0 +1,26 @@
+2.2.1 "linearize"
+
+    jpeg-recompress: linearize metric
+    2018, zvezdochiot
+
+2.2 "zfpoint"
+
+    Find ZF point quality for JPEG
+    Update for libsmallfry 0.0.3
+    2018, zvezdochiot
+
+2.1.3 "sum"
+
+    jpeg-recompress: summary metric and linearize ssim
+    2018, zvezdochiot
+
+2.1.2
+
+    Update for libsmallfry 0.0.2
+    sharpenbad_metric
+    2018, zvezdochiot
+
+2.1.1
+
+    fork jpeg-archive 2.1.1 to jpeg-recompress for compatible libsmallfry.
+    Daniel G. Taylor & zvezdochiot
