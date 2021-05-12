@@ -1,3 +1,9 @@
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/ImageProcessing-ElectronicPublications/jpeg-recompress)
+![GitHub Release Date](https://img.shields.io/github/release-date/ImageProcessing-ElectronicPublications/jpeg-recompress)
+![GitHub repo size](https://img.shields.io/github/repo-size/ImageProcessing-ElectronicPublications/jpeg-recompress)
+![GitHub all releases](https://img.shields.io/github/downloads/ImageProcessing-ElectronicPublications/jpeg-recompress/total)
+![GitHub](https://img.shields.io/github/license/ImageProcessing-ElectronicPublications/jpeg-recompress)
+
 JPEG Recompress
 ===============
 Utilities for archiving photos for saving to long term storage or serving over the web. The goals are:
