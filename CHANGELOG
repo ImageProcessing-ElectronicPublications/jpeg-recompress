@@ -1,3 +1,8 @@
+2.3.0 "return"
+
+    return from mozjpeg to jpeg8
+    2021, zvezdochiot
+
 2.2.1 "linearize"
 
     jpeg-recompress: linearize metric

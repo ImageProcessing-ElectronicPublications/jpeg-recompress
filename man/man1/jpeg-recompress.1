@@ -1,4 +1,4 @@
-.TH "Jpeg-archive User Manual" 2.2 "11 Dec 2018" "User documentation"
+.TH "Jpeg-archive User Manual" 2.3 "17 May 2021" "User documentation"
 .SH NAME
 jpeg-recompress
 .SH DESCRIPTION
@@ -12,47 +12,53 @@ but this can be disabled to save more space if desired.
 jpeg-recompress [options] image.jpg compressed.jpg
 .SH OPTIONS
 .TP
-\fB\-V\fR, \fB\-\-version\fR
-output program version
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-output program help
-.TP
-\fB\-t\fR, \fB\-\-target\fR [arg]
-set target quality UM [0.76]
-.TP
-\fB\-q\fR, \fB\-\-quality\fR [arg]
-set a quality preset: low, medium, high, veryhigh [medium]
-.TP
-\fB\-n\fR, \fB\-\-min\fR [arg]
-minimum JPEG quality [40]
-.TP
-\fB\-x\fR, \fB\-\-max\fR [arg]
-maximum JPEG quality [98]
-.TP
-\fB\-l\fR, \fB\-\-loops\fR [arg]
-set the number of runs to attempt [6]
-.TP
 \fB\-a\fR, \fB\-\-accurate\fR
 favor accuracy over speed
-.TP
-\fB\-m\fR, \fB\-\-method\fR [arg]
-set comparison method to one of 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry', 'shbad', 'ssimshb', 'sum' [sum]
-.TP
-\fB\-s\fR, \fB\-\-strip\fR
-strip metadata
-.TP
-\fB\-d\fR, \fB\-\-defish\fR [arg]
-set defish strength [0.0]
-.TP
-\fB\-r\fR, \fB\-\-ppm\fR
-parse input as PPM
 .TP
 \fB\-c\fR, \fB\-\-no-copy\fR
 disable copying files that will not be compressed
 .TP
+\fB\-d\fR, \fB\-\-defish\fR [arg]
+set defish strength [0.0]
+.TP
+\fB\-f\fR, \fB\-\-force\fR
+force process
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+output program help
+.TP
+\fB\-l\fR, \fB\-\-loops\fR [arg]
+set the number of runs to attempt [6]
+.TP
+\fB\-m\fR, \fB\-\-method\fR [arg]
+set comparison method to one of 'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry', 'shbad', 'ssimshb', 'cor', 'corsh', 'sum' [sum]
+.TP
+\fB\-n\fR, \fB\-\-min\fR [arg]
+minimum JPEG quality [40]
+.TP
 \fB\-p\fR, \fB\-\-no-progressive\fR
 disable progressive encoding
+.TP
+\fB\-q\fR, \fB\-\-quality\fR [arg]
+set a quality preset: low, medium, high, veryhigh [medium]
+.TP
+\fB\-r\fR, \fB\-\-ppm\fR
+parse input as PPM
+.TP
+\fB\-s\fR, \fB\-\-strip\fR
+strip metadata
+.TP
+\fB\-t\fR, \fB\-\-target\fR [arg]
+set target quality UM [0.76]
+.TP
+\fB\-x\fR, \fB\-\-max\fR [arg]
+maximum JPEG quality [98]
+.TP
+\fB\-z\fR, \fB\-\-zoom\fR [arg]
+set defish zoom [1.0]
+.TP
+\fB\-Q\fR, \fB\-\-quiet\fR
+only print out errors
 .TP
 \fB\-S\fR, \fB\-\-subsample\fR [arg]
 set subsampling method, valid values: 'default', 'disable' [default]
@@ -60,8 +66,11 @@ set subsampling method, valid values: 'default', 'disable' [default]
 \fB\-T\fR, \fB\-\-input-filetype\fR [arg]
 set input file type to one of 'auto', 'jpeg', 'ppm' [auto]
 .TP
-\fB\-Q\fR, \fB\-\-quiet\fR
-only print out errors
+\fB\-V\fR, \fB\-\-version\fR
+output program version
+.TP
+\fB\-Y\fR, \fB\-\-ycbcr\fR [arg]
+YCbCr jpeg colorspace: 0 - source, >0 - YCrCb, <0 - RGB
 .SH EXAMPLES
 Default settings:
 .PP

@@ -1,4 +1,4 @@
-.TH "Jpeg-archive User Manual" 2.2 "11 Dec 2018" "User documentation"
+.TH "Jpeg-archive User Manual" 2.3 "17 May 2021" "User documentation"
 .SH NAME
 jpeg-compare
 .SH DESCRIPTION
@@ -9,29 +9,32 @@ PSNR, SSIM, and MS-SSIM return floats but require images to be the same dimensio
 jpeg-compare [options] image1.jpg image2.jpg
 .SH OPTIONS
 .TP
-\fB\-V\fR, \fB\-\-version\fR
-output program version
-.TP
 \fB\-h\fR, \fB\-\-help\fR
 output program help
+.TP
+\fB\-m\fR, \fB\-\-method\fR [arg]
+set comparison method to one of 'fast', 'psnr', 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry', 'shbad', 'ssimshb', 'cor', 'corsh'. 'sum' [fast]
+.TP
+\fB\-n\fR, \fB\-\-norm\fR
+UM scale metric
+.TP
+\fB\-r\fR, \fB\-\-ppm\fR
+parse first input as PPM instead of JPEG
 .TP
 \fB\-s\fR, \fB\-\-size\fR [arg]
 set fast comparison image hash size
 .TP
-\fB\-m\fR, \fB\-\-method\fR [arg]
-set comparison method to one of 'fast', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'cor', 'corsh' [fast]
-.TP
 \fB\-A\fR, \fB\-\-radius\fR [arg]
 set aperture size (for corsh)
-.TP
-\fB\-r\fR, \fB\-\-ppm\fR
-parse first input as PPM instead of JPEG
 .TP
 \fB\-T\fR, \fB\-\-input-filetype\fR [arg]
 set first input file type to one of 'auto', 'jpeg', 'ppm' [auto]
 .TP
 \fB\-U\fR, \fB\-\-second-filetype\fR [arg]
 set second input file type to one of 'auto', 'jpeg', 'ppm' [auto]
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+output program version
 .TP
 \fB\-\-short\fR
 do not prefix output with the name of the used method

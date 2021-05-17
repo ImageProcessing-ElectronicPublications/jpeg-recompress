@@ -1,7 +1,4 @@
-#include "../src/edit.h"
-#include "../src/hash.h"
-#include "../src/util.h"
-
+#include "../src/jmetrics.h"
 #include "../src/test/describe.h"
 
 describe ("Unit Tests", {

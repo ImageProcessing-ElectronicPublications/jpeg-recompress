@@ -4,8 +4,8 @@
 ![GitHub all releases](https://img.shields.io/github/downloads/ImageProcessing-ElectronicPublications/jpeg-recompress/total)
 ![GitHub](https://img.shields.io/github/license/ImageProcessing-ElectronicPublications/jpeg-recompress)
 
-JPEG Recompress
-===============
+# JPEG Recompress
+
 Utilities for archiving photos for saving to long term storage or serving over the web. The goals are:
 
  * Use a common, well supported format (JPEG)
@@ -20,12 +20,12 @@ Approach:
 
 Contributions to this project are very welcome.
 
-Download
---------
+## Download
+
 You can download the latest source and binary releases from the [JPEG Archive releases page](https://github.com/zvezdochiot/jpeg-recompress/releases).
 
-Utilities
----------
+## Utilities
+
 The following utilities are part of this project. All of them accept a `--help` parameter to see the available options.
 
 ### jpeg-recompress
@@ -57,6 +57,7 @@ SmallFry | `-m smallfry` | Linear-weighted BBCQ-like ([original project](https:/
 **Note**: The SmallFry algorithm may be [patented](http://www.jpegmini.com/main/technology) so use with caution.
 
 #### Subsampling
+
 The JPEG format allows for subsampling of the color channels to save space. For each 2x2 block of pixels per color channel (four pixels total) it can store four pixels (all of them), two pixels or a single pixel. By default, the JPEG encoder subsamples the non-luma channels to two pixels (often referred to as 4:2:0 subsampling). Most digital cameras do the same because of limitations in the human eye. This may lead to unintended behavior for specific use cases (see #12 for an example), so you can use `--subsample disable` to disable this subsampling.
 
 #### Example Commands
@@ -114,34 +115,28 @@ Create a hash of an image that can be used to compare it to other images quickly
 jpeg-hash image.jpg
 ```
 
-Building
---------
+## Building
+
 ### Dependencies
- * [libiqa](https://github.com/zvezdochiot/libiqa)
- * [libsmallfry](https://github.com/zvezdochiot/libsmallfry)
- * [mozjpeg](https://github.com/zvezdochiot/mozjpeg)
+ * [libiqa](https://github.com/ImageProcessing-ElectronicPublications/libiqa)
+ * [libsmallfry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry)
+ * [jpeg8](https://www.ijg.org)
 
 #### Debian
 Debian users can install via `apt-get`:
 
 ```bash
-sudo apt-get install build-essential autoconf pkg-config nasm libtool
-git clone https://github.com/zvezdochiot/libiqa.git
+sudo apt-get install build-essential autoconf pkg-config nasm libtool libjpeg8-dev
+git clone https://github.com/ImageProcessing-ElectronicPublications/libiqa.git
 cd libiqa
 make
 sudo make install
 cd ..
-git clone https://github.com/zvezdochiot/libsmallfry.git
+git clone https://github.com/ImageProcessing-ElectronicPublications/libsmallfry.git
 cd libsmallfry
 make
 sudo make install
 cd ..
-git clone https://github.com/zvezdochiot/mozjpeg.git
-cd mozjpeg
-autoreconf -fiv
-./configure --with-jpeg8
-make
-sudo make install
 ```
 
 ### Compiling (Linux and Mac OS X)
@@ -158,13 +153,13 @@ Install the binaries into `/usr/local/bin`:
 sudo make install
 ```
 
-Links / Alternatives
---------------------
+## Links / Alternatives
+
 * https://github.com/rflynn/imgmin
 * https://news.ycombinator.com/item?id=803839
 
-License
--------
+## License
+
 * JPEG-Recompress is copyright &copy; 2015 Daniel G. Taylor
 * Image Quality Assessment (IQA) is copyright 2011, Tom Distler (http://tdistler.com)
 * SmallFry is copyright 2014, Derek Buitenhuis (https://github.com/dwbuiten)
