@@ -1,3 +1,11 @@
+JPEG Recompress
+https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
+
+2.3.1 "weight"
+
+    weight average for SUM metrics
+    2021, zvezdochiot
+
 2.3.0 "return"
 
     return from mozjpeg to jpeg8

@@ -201,5 +201,6 @@ char* MetricName(int currentmethod);
 float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int width, int height, int components, int radius);
 int compareFastFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int size);
 int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int umscale, int radius, enum filetype inputFiletype1, enum filetype inputFiletype2);
+float waverage4(float x1, float x2, float x3, float x4);
 
 #endif

@@ -7,6 +7,30 @@ float clamp(float low, float value, float high)
     return (value < low) ? low : ((value > high) ? high : value);
 }
 
+float waverage4(float x1, float x2, float x3, float x4)
+{
+    float xm, dx1, dx2 ,dx3, dx4, dxs, w1, w2, w3, w4, ws;
+    xm = x1 + x2 + x3 + x4;
+    xm *= 0.25f;
+    dx1 = (x1 - xm) * (x1 - xm);
+    dx2 = (x2 - xm) * (x2 - xm);
+    dx3 = (x3 - xm) * (x3 - xm);
+    dx4 = (x4 - xm) * (x4 - xm);
+    dxs = dx1 + dx2 + dx3 + dx4;
+    dxs *= 0.25f;
+    if (dxs > 0.0f)
+    {
+        w1 = dxs / (dxs + dx1);
+        w2 = dxs / (dxs + dx2);
+        w3 = dxs / (dxs + dx3);
+        w4 = dxs / (dxs + dx4);
+        ws = w1 + w2 + w3 + w4;
+        if (ws > 0.0f)
+            xm = (w1 * x1 + w2 * x2 + w3 * x3 + w4 * x4) / ws;
+    }
+    return xm;
+}
+
 int interpolate(const unsigned char *image, int width, int components, float x, float y, int offset)
 {
     int stride = width * components;
@@ -390,7 +414,7 @@ unsigned long encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, in
     }
 
     jpeg_set_quality(&cinfo, quality, TRUE);
-	jpeg_set_colorspace (&cinfo, jpegcs);
+    jpeg_set_colorspace (&cinfo, jpegcs);
 
     // Start the compression
     jpeg_start_compress(&cinfo, TRUE);
@@ -807,7 +831,7 @@ char* MetricName(int currentmethod)
 
 float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int width, int height, int components, int radius)
 {
-    float diff, tmetric;
+    float diff, tmetric, tm1, tm2, tm3, tm4;
 
     // Calculate and print comparison
     switch (method)
@@ -853,14 +877,14 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
     case SUMMET:
     default:
         tmetric = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
-        diff = RescaleMetric(SSIM, tmetric);
+        tm1 = RescaleMetric(SSIM, tmetric);
         tmetric = metric_smallfry(image1, image2, width, height);
-        diff += RescaleMetric(SMALLFRY, tmetric);
+        tm2 = RescaleMetric(SMALLFRY, tmetric);
         tmetric = metric_sharpenbad(image1, image2, width, height);
-        diff += RescaleMetric(SHARPENBAD, tmetric);
+        tm3 = RescaleMetric(SHARPENBAD, tmetric);
         tmetric = metric_corsharp(image1, image2, width, height, radius);
-        diff += RescaleMetric(CORSHARP, tmetric);
-        diff *= 0.25f;
+        tm4 = RescaleMetric(CORSHARP, tmetric);
+        diff = waverage4(tm1, tm2, tm3, tm4);
         break;
     }
     return diff;

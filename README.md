@@ -22,7 +22,7 @@ Contributions to this project are very welcome.
 
 ## Download
 
-You can download the latest source and binary releases from the [JPEG Archive releases page](https://github.com/zvezdochiot/jpeg-recompress/releases).
+You can download the latest source and binary releases from the [JPEG Archive releases page](https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress/releases).
 
 ## Utilities
 
