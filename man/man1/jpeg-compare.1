@@ -1,4 +1,4 @@
-.TH "Jpeg-archive User Manual" 2.3 "17 May 2021" "User documentation"
+.TH "jpeg-compare" 2.4 "03 Aug 2022" "User manual"
 .SH NAME
 jpeg-compare
 .SH DESCRIPTION
@@ -13,7 +13,7 @@ jpeg-compare [options] image1.jpg image2.jpg
 output program help
 .TP
 \fB\-m\fR, \fB\-\-method\fR [arg]
-set comparison method to one of 'fast', 'psnr', 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry', 'shbad', 'ssimshb', 'cor', 'corsh'. 'sum' [fast]
+set comparison method to one of 'fast', 'psnr', 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'cor', 'corsh'. 'sum' [fast]
 .TP
 \fB\-n\fR, \fB\-\-norm\fR
 UM scale metric
@@ -62,7 +62,4 @@ jpeg-compare --method ssim image1.jpg image2.jpg
  jpeg-hash,
  jpeg-recompress,
  jpeg-zfpoint,
- mozcjpeg,
  cjpeg
-
-

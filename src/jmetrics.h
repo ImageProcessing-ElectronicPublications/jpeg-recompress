@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <iqa.h>
-#include <smallfry.h>
 #include <sys/types.h>
 #include <jpeglib.h>
+#include <iqa.h>
+#include <smallfry.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -21,7 +21,7 @@
 #define JMETRICS_H
 
 #ifndef JMVERSION
-#define JMVERSION "2.3.0"
+#define JMVERSION "2.4.0"
 #endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -60,8 +60,9 @@ enum METHOD
     SSIM,
     MS_SSIM,
     SMALLFRY,
-    SSIMFRY,
     SHARPENBAD,
+    NHW,
+    SSIMFRY,
     SSIMSHBAD,
     SUMMET,
     COR,

@@ -725,6 +725,8 @@ enum METHOD parseMethod(const char *s)
         return SMALLFRY;
     if (!strcmp("shbad", s))
         return SHARPENBAD;
+    if (!strcmp("nhw", s))
+        return NHW;
     if (!strcmp("ssimfry", s))
         return SSIMFRY;
     if (!strcmp("ssimshb", s))
@@ -768,6 +770,14 @@ float RescaleMetric(int currentmethod, float value)
         value *= 0.105f;
         value -= 10.0f;
         break;
+    case NHW:
+        value = 1.0f / value;
+        value = sqrt(value);
+        value = sqrt(value);
+        value = sqrt(value);
+        value *= 2.6f;
+        value -= 1.3f;
+        break;
     case COR:
         value = cor_sigma(value);
         value = cor_sigma(value);
@@ -807,14 +817,17 @@ char* MetricName(int currentmethod)
     case SMALLFRY:
         value = "SMALLFRY";
         break;
+    case SHARPENBAD:
+        value = "SHARPENBAD";
+        break;
+    case NHW:
+        value = "NHW";
+        break;
     case COR:
         value = "COR";
         break;
     case CORSHARP:
         value = "CORSHARP";
-        break;
-    case SHARPENBAD:
-        value = "SHARPENBAD";
         break;
     case SSIMFRY:
         value = "SSIMFRY";
@@ -847,6 +860,9 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
         break;
     case SHARPENBAD:
         diff = metric_sharpenbad(image1, image2, width, height);
+        break;
+    case NHW:
+        diff = metric_nhw(image1, image2, width, height);
         break;
     case COR:
         diff = metric_cor(image1, image2, width, height);
@@ -882,8 +898,8 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
         tm2 = RescaleMetric(SMALLFRY, tmetric);
         tmetric = metric_sharpenbad(image1, image2, width, height);
         tm3 = RescaleMetric(SHARPENBAD, tmetric);
-        tmetric = metric_corsharp(image1, image2, width, height, radius);
-        tm4 = RescaleMetric(CORSHARP, tmetric);
+        tmetric = metric_nhw(image1, image2, width, height);
+        tm4 = RescaleMetric(NHW, tmetric);
         diff = waverage4(tm1, tm2, tm3, tm4);
         break;
     }
@@ -937,6 +953,7 @@ int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsig
     case MS_SSIM:
     case SMALLFRY:
     case SHARPENBAD:
+    case NHW:
     case COR:
     case CORSHARP:
     default:

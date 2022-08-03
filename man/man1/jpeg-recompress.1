@@ -1,4 +1,4 @@
-.TH "Jpeg-archive User Manual" 2.3 "17 May 2021" "User documentation"
+.TH "jpeg-recompress" 2.4 "03 Aug 2022" "User manual"
 .SH NAME
 jpeg-recompress
 .SH DESCRIPTION
@@ -31,7 +31,7 @@ output program help
 set the number of runs to attempt [6]
 .TP
 \fB\-m\fR, \fB\-\-method\fR [arg]
-set comparison method to one of 'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry', 'shbad', 'ssimshb', 'cor', 'corsh', 'sum' [sum]
+set comparison method to one of 'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'cor', 'corsh', 'sum' [sum]
 .TP
 \fB\-n\fR, \fB\-\-min\fR [arg]
 minimum JPEG quality [40]
@@ -130,5 +130,4 @@ jpeg-recompress --quiet image.jpg compressed.jpg
  jpeg-compare,
  jpeg-hash,
  jpeg-zfpoint,
- mozcjpeg
  cjpeg
