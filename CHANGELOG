@@ -1,6 +1,11 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.5.0 "webp"
+
+    Use libwebp for WEBP format
+    2022, zvezdochiot
+
 2.4.0 "nhw"
 
     Update for libsmallfry 0.1.0

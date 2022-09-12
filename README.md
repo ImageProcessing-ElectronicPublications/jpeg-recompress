@@ -115,12 +115,22 @@ Create a hash of an image that can be used to compare it to other images quickly
 jpeg-hash image.jpg
 ```
 
+### webp-compress
+Compress JPEGs by re-encoding to the smallest WEBP quality while keeping perceived visual quality the same.
+
+This is a lossy operation, but the images are visually identical and it usually saves >50% of the size for JPEGs coming from a digital camera, particularly DSLRs.
+
+All EXIF/IPTC/XMP and color profile metadata are not preserved!
+
+Some basic photo-related editing options are available, such as removing fisheye lens distortion.
+
 ## Building
 
 ### Dependencies
  * [libiqa](https://github.com/ImageProcessing-ElectronicPublications/libiqa)
  * [libsmallfry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry)
  * [jpeg8](https://www.ijg.org)
+ * [webp](https://developers.google.com/speed/webp/)
 
 #### Debian
 Debian users can install via `apt-get`:

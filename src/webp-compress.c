@@ -5,37 +5,35 @@
     that huffman tables are optimized if they weren't already.
 */
 
+#include <webp/encode.h>
+#include <webp/decode.h>
 #include <getopt.h>
 #include "jmetrics.h"
 
-const char *COMMENT = "Compressed by jpeg-recompress";
+const char *COMMENT = "Compressed by webp-compress";
 
 void usage(char *progname)
 {
-    printf("usage: %s [options] input.jpg output.jpg\n\n", progname);
+    printf("usage: %s [options] input.[jpg|ppm] output.webp\n\n", progname);
     printf("options:\n\n");
-    printf("  -a, --accurate               favor accuracy over speed\n");
     printf("  -c, --no-copy                disable copying files that will not be compressed\n");
     printf("  -d, --defish [arg]           set defish strength [0.0]\n");
     printf("  -f, --force                  force process\n");
     printf("  -h, --help                   output program help\n");
-    printf("  -l, --loops [arg]            set the number of runs to attempt [6]\n");
+    printf("  -l, --loops [arg]            set the number of runs to attempt [8]\n");
     printf("  -m, --method [arg]           set comparison method to one of:\n");
     printf("                               'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry',\n");
     printf("                               'shbad', 'nhw', 'ssimshb', 'cor', 'corsh', 'sum' [sum]\n");
-    printf("  -n, --min [arg]              minimum JPEG quality [40]\n");
-    printf("  -p, --no-progressive         disable progressive encoding\n");
+    printf("  -n, --min [arg]              minimum quality [1]\n");
     printf("  -q, --quality [arg]          set a quality preset: low, medium, high, veryhigh [medium]\n");
     printf("  -r, --ppm                    parse input as PPM\n");
     printf("  -s, --strip                  strip metadata\n");
     printf("  -t, --target [arg]           set target quality [0.76]\n");
-    printf("  -x, --max [arg]              maximum JPEG quality [98]\n");
+    printf("  -x, --max [arg]              maximum quality [99]\n");
     printf("  -z, --zoom [arg]             set defish zoom [1.0]\n");
     printf("  -Q, --quiet                  only print out errors\n");
-    printf("  -S, --subsample [arg]        set subsampling method to one of 'default', 'disable' [default]\n");
     printf("  -T, --input-filetype [arg]   set input file type to one of 'auto', 'jpeg', 'ppm' [auto]\n");
     printf("  -V, --version                output program version\n");
-    printf("  -Y, --ycbcr [arg]            YCbCr jpeg colorspace: 0 - source, >0 - YCrCb, <0 - RGB\n");
 }
 
 int main (int argc, char **argv)
@@ -43,22 +41,16 @@ int main (int argc, char **argv)
     int method = SUMMET;
 
     // Number of binary search steps
-    int attempts = 6;
+    int attempts = 8;
 
     float target = 0.0f;
     int preset = MEDIUM;
 
     // Min/max JPEG quality
-    int jpegMin = 40;
-    int jpegMax = 98;
+    int qMin = 1;
+    int qMax = 99;
 
     int force = 0;
-    int ycbcr = 0;
-    // Strip metadata from the file?
-    int strip = 0;
-
-    // Disable progressive mode?
-    int noProgressive = 0;
 
     // Defish the image?
     float defishStrength = 0.0f;
@@ -70,19 +62,12 @@ int main (int argc, char **argv)
     // Whether to copy files that cannot be compressed
     int copyFiles = 1;
 
-    // Whether to favor accuracy over speed
-    int accurate = 0;
-
-    // Chroma subsampling method
-    int subsample = SUBSAMPLE_DEFAULT;
-
     // Quiet mode (less output)
     int quiet = 0;
 
-    const char *optstring = "acd:fhl:m:n:pq:rst:x:z:QS:T:VY:";
+    const char *optstring = "cd:fhl:m:n:q:rt:x:z:QT:V";
     static const struct option opts[] =
     {
-        { "accurate", no_argument, 0, 'a' },
         { "defish", required_argument, 0, 'd' },
         { "force", no_argument, 0, 'f' },
         { "help", no_argument, 0, 'h' },
@@ -97,24 +82,18 @@ int main (int argc, char **argv)
         { "quality", required_argument, 0, 'q' },
         { "quiet", no_argument, 0, 'Q' },
         { "target", required_argument, 0, 't' },
-        { "strip", no_argument, 0, 's' },
-        { "subsample", required_argument, 0, 'S' },
         { "version", no_argument, 0, 'V' },
-        { "ycbcr", required_argument, 0, 'Y' },
         { "zoom", required_argument, 0, 'z' },
         { 0, 0, 0, 0 }
     };
     int opt, longind = 0;
 
-    char *progname = "jpeg-recompress";
+    char *progname = "webp-compress";
 
     while ((opt = getopt_long(argc, argv, optstring, opts, &longind)) != -1)
     {
         switch (opt)
         {
-        case 'a':
-            accurate = 1;
-            break;
         case 'c':
             copyFiles = 0;
             break;
@@ -134,10 +113,7 @@ int main (int argc, char **argv)
             method = parseMethod(optarg);
             break;
         case 'n':
-            jpegMin = atoi(optarg);
-            break;
-        case 'p':
-            noProgressive = 1;
+            qMin = atoi(optarg);
             break;
         case 'q':
             preset = parseQuality(optarg);
@@ -145,20 +121,14 @@ int main (int argc, char **argv)
         case 'r':
             inputFiletype = FILETYPE_PPM;
             break;
-        case 's':
-            strip = 1;
-            break;
         case 't':
             target = atof(optarg);
             break;
         case 'x':
-            jpegMax = atoi(optarg);
+            qMax = atoi(optarg);
             break;
         case 'z':
             defishZoom = atof(optarg);
-            break;
-        case 'S':
-            subsample = parseSubsampling(optarg);
             break;
         case 'T':
             if (inputFiletype != FILETYPE_AUTO)
@@ -174,9 +144,6 @@ int main (int argc, char **argv)
         case 'V':
             version();
             return 0;
-        case 'Y':
-            ycbcr = atoi(optarg);
-            break;
         };
     }
 
@@ -199,6 +166,22 @@ int main (int argc, char **argv)
         target = setTargetFromPreset(preset);
     }
 
+    WebPConfig config;
+    // if (!WebPConfigPreset(&config, WEBP_PRESET_DEFAULT, 50)) {
+    if (!WebPConfigPreset(&config, WEBP_PRESET_PHOTO, 50)) {
+        error("could not initialize WebP configuration");
+        return 1;
+    }
+    WebPPicture pic;
+    if (!WebPPictureInit(&pic)) {
+        error("could not initialize WebP picture");
+        return 1;
+    }
+    WebPMemoryWriter wrt;
+    WebPMemoryWriterInit(&wrt);
+    pic.writer = WebPMemoryWrite;
+    pic.custom_ptr = (void*)&wrt;
+
     unsigned char *buf;
     long bufSize = 0;
     unsigned char *original;
@@ -210,16 +193,20 @@ int main (int argc, char **argv)
     unsigned char *compressedGray;
     long compressedGraySize = 0;
     unsigned char *tmpImage;
+    uint8_t *decodedImage = NULL;
     int width, height;
-    unsigned char *metaBuf;
-    unsigned int metaSize = 0;
     FILE *file;
     char *inputPath = argv[optind];
     char *outputPath = argv[optind + 1];
-    int jpegcs, jpegcst;
+    int jpegcs, rgb_stride, err, ok;
 
     /* Read the input into a buffer. */
     bufSize = readFile(inputPath, (void **) &buf);
+    if (!bufSize)
+    {
+        WebPMemoryWriterClear(&wrt);
+        return 1;
+    }
 
     /* Detect input file type. */
     if (inputFiletype == FILETYPE_AUTO)
@@ -233,6 +220,7 @@ int main (int argc, char **argv)
     if (!originalSize)
     {
         error("invalid input file: %s", inputPath);
+        WebPMemoryWriterClear(&wrt);
         return 1;
     }
 
@@ -245,62 +233,28 @@ int main (int argc, char **argv)
         original = tmpImage;
     }
 
+    // WebP image dimensions
+    pic.width = width;
+    pic.height = height;
+    rgb_stride = width * 3;
+
     // Convert RGB input into Y
     originalGraySize = grayscale(original, &originalGray, width, height);
 
-    if (inputFiletype == FILETYPE_JPEG)
-    {
-        // Read metadata (EXIF / IPTC / XMP tags)
-        if (getMetadata(buf, bufSize, &metaBuf, &metaSize, COMMENT) && !force)
-        {
-            if (copyFiles)
-            {
-                info(quiet, "File already processed by jpeg-recompress!\n");
-                file = openOutput(outputPath);
-                if (file == NULL)
-                {
-                    error("could not open output file: %s", outputPath);
-                    return 1;
-                }
-
-                fwrite(buf, bufSize, 1, file);
-                fclose(file);
-
-                free(buf);
-
-                return 0;
-            }
-            else
-            {
-                error("file already processed by jpeg-recompress!");
-                free(buf);
-                return 2;
-            }
-        }
-    }
-
-    if (strip)
-        metaSize = 0;
-    else
-        info(quiet, "Metadata size is %ukb\n", metaSize / 1024);
-
     if (!originalSize || !originalGraySize)
-        return 1;
-
-    if (ycbcr < 0)
-        jpegcs = JCS_RGB;
-    if (ycbcr > 0)
-        jpegcs = JCS_YCbCr;
-    
-    if (jpegMin > jpegMax)
     {
-        error("maximum JPEG quality must not be smaller than minimum JPEG quality!");
+        error("could not create the original grayscale image");
+        WebPMemoryWriterClear(&wrt);
+        WebPPictureFree(&pic);
+    }
+
+    if (qMin > qMax)
+    {
+        error("maximum JPEG quality must not be smaller than minimum quality!");
         return 1;
     }
 
-    // Do a binary search to find the optimal encoding quality for the
-    // given target SSIM value.
-    int min = jpegMin, max = jpegMax;
+    int min = qMin, max = qMax;
     for (int attempt = attempts - 1; attempt >= 0; --attempt)
     {
         float metric, umetric;
@@ -310,18 +264,53 @@ int main (int argc, char **argv)
         if (min == max)
             attempt = 0;
 
-        int progressive = attempt ? 0 : !noProgressive;
-        int optimize = accurate ? 1 : (attempt ? 0 : 1);
+        WebPMemoryWriterClear(&wrt);
 
-        // Recompress to a new quality level, without optimizations (for speed)
-        compressedSize = encodeJpeg(&compressed, original, width, height, JCS_RGB, quality, jpegcs, progressive, optimize, subsample);
+        ok = WebPPictureImportRGB(&pic, original, rgb_stride);
+        if (!ok) {
+            error("could not import RGB image to WebP");
+            WebPMemoryWriterClear(&wrt);
+            free(original);
+            free(originalGray);
+            return 1;
+        }
 
-        // Load compressed luma for quality comparison
-        compressedGraySize = decodeJpeg(compressed, compressedSize, &compressedGray, &width, &height, &jpegcst, JCS_GRAYSCALE);
+        // Recompress to a new quality level
+        config.quality = (float)quality;
+        ok = WebPEncode(&config, &pic);
+        if (!ok)
+        {
+            error("could not encode image to WebP");
+            WebPMemoryWriterClear(&wrt);
+            WebPPictureFree(&pic); // must be called independently of the 'ok' result
+            free(original);
+            free(originalGray);
+            return 1;
+        }
+        compressedSize = wrt.size;
+
+        // Decode the just encoded buffer
+        decodedImage = WebPDecodeRGB(wrt.mem, wrt.size, &width, &height);
+        if (decodedImage == NULL) {
+            error("unable to decode buffer that was just encoded!");
+            WebPMemoryWriterClear(&wrt);
+            WebPPictureFree(&pic);
+            free(originalGray);
+            return 1;
+        }
+
+        // Convert RGB input into Y
+        compressedGraySize = grayscale(decodedImage, &compressedGray, width, height);
+
+        // Free the decoded RGB image
+        WebPFree(decodedImage);
 
         if (!compressedGraySize)
         {
             error("unable to decode file that was just encoded!");
+            WebPMemoryWriterClear(&wrt);
+            WebPPictureFree(&pic);
+            free(originalGray);
             return 1;
         }
 
@@ -379,16 +368,15 @@ int main (int argc, char **argv)
         // If we aren't done yet, then free the image data
         if (attempt)
         {
-            free(compressed);
-            free(compressedGray);
+            WebPPictureFree(&pic);
         }
     }
 
     free(buf);
 
     // Calculate and show savings, if any
-    int percent = (compressedSize + metaSize) * 100 / bufSize;
-    unsigned long saved = (bufSize > compressedSize) ? bufSize - compressedSize - metaSize : 0;
+    int percent = compressedSize * 100 / bufSize;
+    unsigned long saved = (bufSize > compressedSize) ? (bufSize - compressedSize) : 0;
     info(quiet, "New size is %i%% of original (saved %lu kb)\n", percent, saved / 1024);
 
     if (compressedSize >= bufSize && !force)
@@ -402,49 +390,28 @@ int main (int argc, char **argv)
     if (file == NULL)
     {
         error("could not open output file");
+        WebPMemoryWriterClear(&wrt);
         return 1;
     }
-
-    /* Check that the metadata starts with a SOI marker. */
-    if (!checkJpegMagic(compressed, compressedSize))
-    {
-        error("missing SOI marker, aborting!");
-        return 1;
-    }
-
-    /* Make sure APP0 is recorded immediately after the SOI marker. */
-    if (compressed[2] != 0xff || (compressed[3] != 0xe0 && compressed[3] != 0xee))
-    {
-        error("missing APP0 marker, aborting!");
-        return 1;
-    }
-
-    /* Write SOI marker and APP0 metadata to the output file. */
-    int app0_len = (compressed[4] << 8) + compressed[5];
-    fwrite(compressed, 4 + app0_len, 1, file);
-
-    /*
-     * Write comment (COM metadata) so we know not to reprocess this file in
-     * the future if it gets passed in again.
-     */
-    fputc(0xff, file);
-    fputc(0xfe, file);
-    fputc(0x00, file);
-    fputc(strlen(COMMENT) + 2, file);
-    fwrite(COMMENT, strlen(COMMENT), 1, file);
-
-    /* Write additional metadata markers. */
-    if (inputFiletype == FILETYPE_JPEG && !strip)
-        fwrite(metaBuf, metaSize, 1, file);
 
     /* Write image data. */
-    fwrite(compressed + 4 + app0_len, compressedSize - 4 - app0_len, 1, file);
-    fclose(file);
+    int wSize = fwrite(wrt.mem, wrt.size, 1, file);
 
-    if (inputFiletype == FILETYPE_JPEG && !strip)
-        free(metaBuf);
+    WebPMemoryWriterClear(&wrt);
 
-    free(compressed);
+    if (wSize != 1) {
+        fclose(file);
+        error("could not write to output file: %s", outputPath);
+
+        return 1;
+    }
+
+    err = fclose(file);
+    if (err) {
+        error("could not close the output file: %s", outputPath);
+        return 1;
+    }
+
     free(original);
     free(originalGray);
 

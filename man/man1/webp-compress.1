@@ -1,0 +1,104 @@
+.TH "webp-recompress" 2.5 "12 Sep 2022" "User manual"
+
+.SH NAME
+webp-compress
+
+.SH DESCRIPTION
+Compress JPEGs by re-encoding to the smallest WEBP quality while keeping perceived
+visual quality the same.
+This is a lossy operation, but the images are visually identical and it usually
+saves >50% of the size for JPEGs coming from a digital camera, particularly DSLRs.
+All EXIF/IPTC/XMP and color profile metadata are not preserved!
+
+.SH SYNOPSIS
+webp-compress [options] image.[jpg|ppm] compressed.webp
+.SH OPTIONS
+.TP
+\fB\-c\fR, \fB\-\-no-copy\fR
+disable copying files that will not be compressed
+.TP
+\fB\-d\fR, \fB\-\-defish\fR [arg]
+set defish strength [0.0]
+.TP
+\fB\-f\fR, \fB\-\-force\fR
+force process
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+output program help
+.TP
+\fB\-l\fR, \fB\-\-loops\fR [arg]
+set the number of runs to attempt [8]
+.TP
+\fB\-m\fR, \fB\-\-method\fR [arg]
+set comparison method to one of 'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'cor', 'corsh', 'sum' [sum]
+.TP
+\fB\-n\fR, \fB\-\-min\fR [arg]
+minimum quality [1]
+.TP
+\fB\-q\fR, \fB\-\-quality\fR [arg]
+set a quality preset: low, medium, high, veryhigh [medium]
+.TP
+\fB\-r\fR, \fB\-\-ppm\fR
+parse input as PPM
+.TP
+\fB\-t\fR, \fB\-\-target\fR [arg]
+set target quality UM [0.76]
+.TP
+\fB\-x\fR, \fB\-\-max\fR [arg]
+maximum quality [99]
+.TP
+\fB\-z\fR, \fB\-\-zoom\fR [arg]
+set defish zoom [1.0]
+.TP
+\fB\-Q\fR, \fB\-\-quiet\fR
+only print out errors
+.TP
+\fB\-T\fR, \fB\-\-input-filetype\fR [arg]
+set input file type to one of 'auto', 'jpeg', 'ppm' [auto]
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+output program version
+
+.SH EXAMPLES
+Default settings:
+.PP
+.I
+webp-compress image.jpg compressed.webp
+.PP
+High quality example settings:
+.PP
+.I
+webp-compress --quality high --min 60 image.jpg compressed.webp
+.PP
+Remove fisheye distortion (Tokina 10-17mm on APS-C @ 10mm):
+.PP
+.I
+webp-compress --defish 2.6 --zoom 1.2 image.jpg defished.webp
+.PP
+Read from stdin and write to stdout with '-' as the filename:
+.PP
+.I
+webp-compress - - <image.jpg >compressed.webp
+.PP
+Convert RAW to JPEG via PPM from stdin:
+.PP
+.I
+dcraw -w -q 3 -c IMG_1234.CR2 | webp-compress --ppm - compressed.webp
+.PP
+Disable all output except for errors:
+.PP
+.I
+webp-compress --quiet image.jpg compressed.webp
+
+.SH COPYRIGHT
+ JPEG-Archive is copyright © 2015 Daniel G. Taylor
+ Image Quality Assessment (IQA) is copyright 2011, Tom Distler (http://tdistler.com)
+ SmallFry is copyright 2014, Derek Buitenhuis (https://github.com/dwbuiten)
+ All rights reserved.
+
+.SH "SEE ALSO"
+ jpeg-recompress,
+ jpeg-compare,
+ jpeg-hash,
+ jpeg-zfpoint,
+ cjpeg

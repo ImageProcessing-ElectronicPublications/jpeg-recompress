@@ -12,7 +12,8 @@ PROGR = jpeg-recompress
 PROGC = jpeg-compare
 PROGH = jpeg-hash
 PROGZ = jpeg-zfpoint
-PROGS = $(PROGR) $(PROGC) $(PROGH) $(PROGZ)
+PROGW = webp-compress
+PROGS = $(PROGR) $(PROGC) $(PROGH) $(PROGZ) $(PROGW)
 PREFIX ?= /usr/local
 INSTALL = install
 
@@ -32,6 +33,9 @@ jpeg-hash: src/jpeg-hash.c jmetrics.a
 
 jpeg-zfpoint: src/jpeg-zfpoint.c jmetrics.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+webp-compress: src/webp-compress.c jmetrics.a
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lwebp
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
