@@ -115,6 +115,9 @@ Create a hash of an image that can be used to compare it to other images quickly
 jpeg-hash image.jpg
 ```
 
+### jpeg-zfpoint
+Compress JPEG files by re-encoding them to the lowest JPEG quality using the peculiarity jpeg (zero point) quantization feature.
+
 ### webp-compress
 Compress JPEGs by re-encoding to the smallest WEBP quality while keeping perceived visual quality the same.
 

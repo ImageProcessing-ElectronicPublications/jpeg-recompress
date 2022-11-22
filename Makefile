@@ -4,10 +4,9 @@ CFLAGS += -std=c99 -Wall -O3 -I/usr/include
 LIBIQA = -liqa
 LIBSFRY = -lsmallfry
 LIBJPEG = -ljpeg
+LIBWEBP = -lwebp
+LIBIMM = jmetrics.a
 LDFLAGS += -lm $(LIBJPEG) $(LIBIQA) $(LIBSFRY)
-MAKE ?= make
-AR ?= ar
-RM ?= rm
 PROGR = jpeg-recompress
 PROGC = jpeg-compare
 PROGH = jpeg-hash
@@ -15,37 +14,42 @@ PROGZ = jpeg-zfpoint
 PROGW = webp-compress
 PROGS = $(PROGR) $(PROGC) $(PROGH) $(PROGZ) $(PROGW)
 PREFIX ?= /usr/local
+MAKE ?= make
+AR ?= ar
+RM ?= rm
 INSTALL = install
+
+.PHONY: test clean install uninstall
 
 all: $(PROGS)
 
-jmetrics.a: src/jmetrics.o
+$(LIBIMM): src/jmetrics.o
 	$(AR) crs $@ $^
 
-jpeg-recompress: src/jpeg-recompress.c jmetrics.a
+$(PROGR): src/$(PROGR).c $(LIBIMM)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-jpeg-compare: src/jpeg-compare.c jmetrics.a
+$(PROGC): src/$(PROGC).c $(LIBIMM)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-jpeg-hash: src/jpeg-hash.c jmetrics.a
+$(PROGH): src/$(PROGH).c $(LIBIMM)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-jpeg-zfpoint: src/jpeg-zfpoint.c jmetrics.a
+$(PROGZ): src/$(PROGZ).c $(LIBIMM)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-webp-compress: src/webp-compress.c jmetrics.a
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lwebp
+$(PROGW): src/$(PROGW).c $(LIBIMM)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBWEBP)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-test: test/test.c jmetrics.a
+test: test/test.c $(LIBIMM)
 	$(CC) $(CFLAGS) -o test/$@ $^ $(LDFLAGS)
 	./test/$@
 
 clean:
-	$(RM) -rf $(PROGS) jmetrics.a test/test src/*.o
+	$(RM) -rf $(PROGS) $(LIBIMM) test/test src/*.o
 
 install: all
 	$(INSTALL) -d $(PREFIX)/bin
@@ -53,5 +57,3 @@ install: all
 
 uninstall:
 	$(RM) -f $(PREFIX)/bin/$(PROGR) $(PREFIX)/bin/$(PROGC) $(PREFIX)/bin/$(PROGH) $(PREFIX)/bin/$(PROGZ)
-
-.PHONY: test clean install uninstall
