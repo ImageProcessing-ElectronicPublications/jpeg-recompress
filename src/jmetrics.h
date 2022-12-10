@@ -74,6 +74,7 @@ enum QUALITY_PRESET
 {
     LOW,
     MEDIUM,
+    SUBHIGH,
     HIGH,
     VERYHIGH
 };

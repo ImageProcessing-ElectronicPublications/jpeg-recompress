@@ -4,6 +4,7 @@ https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 2.5.1 "saved"
 
     Fix overflow saved.
+    Correct quality scale (next = (1.0 + prev) / 2)
     Replacing multiplications with counters.
     2022, zvezdochiot
 

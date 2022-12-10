@@ -24,7 +24,7 @@ void usage(char *progname)
     printf("  -p, --no-progressive         disable progressive encoding\n");
     printf("  -r, --ppm                    parse input as PPM\n");
     printf("  -s, --strip                  strip metadata\n");
-    printf("  -x, --max [arg]              maximum JPEG quality [95]\n");
+    printf("  -x, --max [arg]              maximum JPEG quality [100]\n");
     printf("  -z, --zoom [arg]             set defish zoom [1.0]\n");
     printf("  -A, --radius [arg]           sharpen radius [2]\n");
     printf("  -Q, --quiet                  only print out errors\n");

@@ -708,6 +708,8 @@ enum QUALITY_PRESET parseQuality(const char *s)
         return LOW;
     else if (!strcmp("medium", s))
         return MEDIUM;
+    else if (!strcmp("subhigh", s))
+        return SUBHIGH;
     else if (!strcmp("high", s))
         return HIGH;
     else if (!strcmp("veryhigh", s))
@@ -719,20 +721,23 @@ enum QUALITY_PRESET parseQuality(const char *s)
 
 float setTargetFromPreset(int preset)
 {
-    float target = 0.76f;
+    float target = 0.75f;
     switch (preset)
     {
     case LOW:
         target = 0.5f;
         break;
     case MEDIUM:
-        target = 0.76f;
+        target = 0.75f;
+        break;
+    case SUBHIGH:
+        target = 0.875f;
         break;
     case HIGH:
-        target = 0.93f;
+        target = 0.9375f;
         break;
     case VERYHIGH:
-        target = 0.99f;
+        target = 0.96875f;
         break;
     }
     return target;

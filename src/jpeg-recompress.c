@@ -25,10 +25,10 @@ void usage(char *progname)
     printf("                               'shbad', 'nhw', 'ssimshb', 'cor', 'corsh', 'sum' [sum]\n");
     printf("  -n, --min [arg]              minimum JPEG quality [40]\n");
     printf("  -p, --no-progressive         disable progressive encoding\n");
-    printf("  -q, --quality [arg]          set a quality preset: low, medium, high, veryhigh [medium]\n");
+    printf("  -q, --quality [arg]          set a quality preset: low, medium, subhigh, high, veryhigh [medium]\n");
     printf("  -r, --ppm                    parse input as PPM\n");
     printf("  -s, --strip                  strip metadata\n");
-    printf("  -t, --target [arg]           set target quality [0.76]\n");
+    printf("  -t, --target [arg]           set target quality [0.75]\n");
     printf("  -x, --max [arg]              maximum JPEG quality [98]\n");
     printf("  -z, --zoom [arg]             set defish zoom [1.0]\n");
     printf("  -Q, --quiet                  only print out errors\n");

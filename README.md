@@ -68,7 +68,7 @@ SUMMARY     | `-m sum`      | `(ssim + smallfry + shbad + nhw) / 4` **DEFAULT**
 
 "Universal Scale" of metrics (UM):
 ```
-0.0 ... (DIRTY) ... 0.5 ... (LOW) ... 0.76 ... (MEDIUM) ... 0.93 ... (HIGH) ... 0.99 ... (VERYHIGH) ... 1.0
+0.0 ... (DIRTY) ... 0.5 ... (LOW) ... 0.75 ... (MEDIUM) ... 0.875 ... (SUBHIGH) ... 0.9375 ... (HIGH) ... 0.96875 ... (VERYHIGH) ... 1.0
 ```
 Trends:
 ```
