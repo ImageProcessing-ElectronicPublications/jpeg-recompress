@@ -47,6 +47,10 @@ int main (int argc, char **argv)
     int size = 16;
     int radius = 2;
 
+    unsigned char *imageBuf1, *imageBuf2;
+    long bufSize1, bufSize2;
+    char *fileName1, *fileName2;
+
     // Use PPM input?
     enum filetype inputFiletype1 = FILETYPE_AUTO;
     enum filetype inputFiletype2 = FILETYPE_AUTO;
@@ -129,11 +133,8 @@ int main (int argc, char **argv)
     }
 
     // Read the images
-    unsigned char *imageBuf1, *imageBuf2;
-    long bufSize1, bufSize2;
-
-    char *fileName1 = argv[optind];
-    char *fileName2 = argv[optind + 1];
+    fileName1 = argv[optind];
+    fileName2 = argv[optind + 1];
 
     bufSize1 = readFile(fileName1, (void **)&imageBuf1);
     if (!bufSize1)

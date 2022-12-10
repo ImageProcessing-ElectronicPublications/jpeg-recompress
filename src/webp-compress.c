@@ -65,6 +65,22 @@ int main (int argc, char **argv)
     // Quiet mode (less output)
     int quiet = 0;
 
+    unsigned char *buf, *original, *originalGray = NULL, *tmpImage;
+    unsigned char *compressed = NULL, *compressedGray;
+    long bufSize = 0, originalSize = 0, originalGraySize = 0;
+    long compressedGraySize = 0;
+    unsigned long compressedSize = 0, saved;
+    uint8_t *decodedImage = NULL;
+    int width, height, min, max, attempt, quality;
+    int jpegcs, rgb_stride, err, ok, percent, wSize;
+    float metric, umetric;
+    char *inputPath, *outputPath;
+    FILE *file;
+    WebPConfig config;
+    WebPPicture pic;
+    WebPMemoryWriter wrt;
+    WebPMemoryWriterInit(&wrt);
+
     const char *optstring = "cd:fhl:m:n:q:rt:x:z:QT:V";
     static const struct option opts[] =
     {
@@ -153,6 +169,9 @@ int main (int argc, char **argv)
         return 255;
     }
 
+    inputPath = argv[optind];
+    outputPath = argv[optind + 1];
+
     if (method == UNKNOWN)
     {
         error("invalid method!");
@@ -166,39 +185,17 @@ int main (int argc, char **argv)
         target = setTargetFromPreset(preset);
     }
 
-    WebPConfig config;
     // if (!WebPConfigPreset(&config, WEBP_PRESET_DEFAULT, 50)) {
     if (!WebPConfigPreset(&config, WEBP_PRESET_PHOTO, 50)) {
         error("could not initialize WebP configuration");
         return 1;
     }
-    WebPPicture pic;
     if (!WebPPictureInit(&pic)) {
         error("could not initialize WebP picture");
         return 1;
     }
-    WebPMemoryWriter wrt;
-    WebPMemoryWriterInit(&wrt);
     pic.writer = WebPMemoryWrite;
     pic.custom_ptr = (void*)&wrt;
-
-    unsigned char *buf;
-    long bufSize = 0;
-    unsigned char *original;
-    long originalSize = 0;
-    unsigned char *originalGray = NULL;
-    long originalGraySize = 0;
-    unsigned char *compressed = NULL;
-    unsigned long compressedSize = 0;
-    unsigned char *compressedGray;
-    long compressedGraySize = 0;
-    unsigned char *tmpImage;
-    uint8_t *decodedImage = NULL;
-    int width, height;
-    FILE *file;
-    char *inputPath = argv[optind];
-    char *outputPath = argv[optind + 1];
-    int jpegcs, rgb_stride, err, ok;
 
     /* Read the input into a buffer. */
     bufSize = readFile(inputPath, (void **) &buf);
@@ -254,11 +251,11 @@ int main (int argc, char **argv)
         return 1;
     }
 
-    int min = qMin, max = qMax;
-    for (int attempt = attempts - 1; attempt >= 0; --attempt)
+    min = qMin;
+    max = qMax;
+    for (attempt = attempts - 1; attempt >= 0; --attempt)
     {
-        float metric, umetric;
-        int quality = min + (max - min) / 2;
+         quality = min + (max - min) / 2;
 
         /* Terminate early once bisection interval is a singleton. */
         if (min == max)
@@ -375,8 +372,8 @@ int main (int argc, char **argv)
     free(buf);
 
     // Calculate and show savings, if any
-    int percent = compressedSize * 100 / bufSize;
-    unsigned long saved = (bufSize > compressedSize) ? (bufSize - compressedSize) : 0;
+    percent = compressedSize * 100 / bufSize;
+    saved = (bufSize > compressedSize) ? (bufSize - compressedSize) : 0;
     info(quiet, "New size is %i%% of original (saved %lu kb)\n", percent, saved / 1024);
 
     if (compressedSize >= bufSize && !force)
@@ -395,7 +392,7 @@ int main (int argc, char **argv)
     }
 
     /* Write image data. */
-    int wSize = fwrite(wrt.mem, wrt.size, 1, file);
+    wSize = fwrite(wrt.mem, wrt.size, 1, file);
 
     WebPMemoryWriterClear(&wrt);
 

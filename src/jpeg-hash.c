@@ -19,7 +19,7 @@ void usage(char *progname)
 int main (int argc, char **argv)
 {
     unsigned char *hash;
-    int size = 16;
+    int size = 16, x;
 
     const char *optstring = "hs:V";
     static const struct option opts[] =
@@ -63,7 +63,7 @@ int main (int argc, char **argv)
     }
 
     // Print out the hash a string of 1s and 0s
-    for (int x = 0; x < size * size; x++)
+    for (x = 0; x < size * size; x++)
     {
         printf("%c", hash[x] ? '1' : '0');
     }

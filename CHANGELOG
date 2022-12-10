@@ -1,6 +1,12 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.5.1 "saved"
+
+    Fix overflow saved.
+    Replacing multiplications with counters.
+    2022, zvezdochiot
+
 2.5.0 "webp"
 
     Use libwebp for WEBP format

@@ -71,6 +71,18 @@ int main (int argc, char **argv)
     // Quiet mode (less output)
     int quiet = 0;
 
+    unsigned char *buf, *original, *originalGray = NULL, *tmpImage;
+    unsigned char *compressed = NULL, *compressedGray, *metaBuf;
+    long bufSize = 0, originalSize = 0, originalGraySize = 0;
+    long compressedGraySize = 0;
+    unsigned long compressedSize = 0, saved;
+    int width, height, min, max, attempt, percent, app0_len;
+    int jpegcs, jpegcst, quality, progressive, optimize;
+    unsigned int metaSize = 0;
+    float metric, maxmetric, qmetric, cmpMin, cmpMax, cmpQ;
+    char *inputPath, *outputPath;
+    FILE *file;
+
     const char *optstring = "acd:fhl:n:prsx:z:A:S:T:QVY:";
     static const struct option opts[] =
     {
@@ -170,24 +182,8 @@ int main (int argc, char **argv)
         return 255;
     }
 
-    unsigned char *buf;
-    long bufSize = 0;
-    unsigned char *original;
-    long originalSize = 0;
-    unsigned char *originalGray = NULL;
-    long originalGraySize = 0;
-    unsigned char *compressed = NULL;
-    unsigned long compressedSize = 0;
-    unsigned char *compressedGray;
-    long compressedGraySize = 0;
-    unsigned char *tmpImage;
-    int width, height;
-    unsigned char *metaBuf;
-    unsigned int metaSize = 0;
-    FILE *file;
-    char *inputPath = argv[optind];
-    char *outputPath = argv[optind + 1];
-    int jpegcs, jpegcst;
+    inputPath = argv[optind];
+    outputPath = argv[optind + 1];
 
     /* Read the input into a buffer. */
     bufSize = readFile(inputPath, (void **) &buf);
@@ -270,8 +266,8 @@ int main (int argc, char **argv)
     }
 
     // Find ZF point.
-    int min = jpegMin, max = jpegMax;
-    float metric, maxmetric, qmetric, cmpMin, cmpMax, cmpQ;
+    min = jpegMin;
+    max = jpegMax;
     compressedSize = encodeJpeg(&compressed, original, width, height, JCS_RGB, max, jpegcs, 0, 1, subsample);
     compressedGraySize = decodeJpeg(compressed, compressedSize, &compressedGray, &width, &height, &jpegcst, JCS_GRAYSCALE);
     maxmetric = metric_corsharp(originalGray, compressedGray, width, height, shRadius);
@@ -283,11 +279,11 @@ int main (int argc, char **argv)
     metric = metric_corsharp(originalGray, compressedGray, width, height, shRadius);
     metric = cor_sigma(metric);
     cmpMin = qmetric * (float)min - metric;
-    for (int attempt = attempts - 1; attempt >= 0; --attempt)
+    for (attempt = attempts - 1; attempt >= 0; --attempt)
     {
-        int quality = min + (max - min) / 2;
-        int progressive = attempt ? 0 : !noProgressive;
-        int optimize = accurate ? 1 : (attempt ? 0 : 1);
+        quality = min + (max - min) / 2;
+        progressive = attempt ? 0 : !noProgressive;
+        optimize = accurate ? 1 : (attempt ? 0 : 1);
 
         // Recompress to a new quality level, without optimizations (for speed)
         compressedSize = encodeJpeg(&compressed, original, width, height, JCS_RGB, quality, jpegcs, progressive, optimize, subsample);
@@ -340,8 +336,8 @@ int main (int argc, char **argv)
 
 
     // Calculate and show savings, if any
-    int percent = (compressedSize + metaSize) * 100 / bufSize;
-    unsigned long saved = (bufSize > compressedSize) ? bufSize - compressedSize - metaSize : 0;
+    percent = (compressedSize + metaSize) * 100 / bufSize;
+    saved = (bufSize > (compressedSize + metaSize)) ? (bufSize - compressedSize - metaSize) : 0;
     info(quiet, "New size is %i%% of original (saved %lu kb)\n", percent, saved / 1024);
 
     if (compressedSize >= bufSize && !force)
@@ -373,7 +369,7 @@ int main (int argc, char **argv)
     }
 
     /* Write SOI marker and APP0 metadata to the output file. */
-    int app0_len = (compressed[4] << 8) + compressed[5];
+    app0_len = (compressed[4] << 8) + compressed[5];
     fwrite(compressed, 4 + app0_len, 1, file);
 
     /*

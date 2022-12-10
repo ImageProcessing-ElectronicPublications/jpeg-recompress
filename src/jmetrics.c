@@ -33,39 +33,49 @@ float waverage4(float x1, float x2, float x3, float x4)
 
 int interpolate(const unsigned char *image, int width, int components, float x, float y, int offset)
 {
-    int stride = width * components;
-    float px = x - floor(x);
-    float py = y - floor(y);
-    int x1 = floor(x);
-    int x2 = ceil(x);
-    int y1 = floor(y);
-    int y2 = ceil(y);
+    int stride, x1, x2, y1, y2, pix, ys1, ys2, xc1, xc2;
+    float px, py, top, bot;
 
-    float top = (float) image[y1 * stride + x1 * components + offset] * (1.0 - px) +
-                (float) image[y1 * stride + x2 * components + offset] * px;
-    float bot = (float) image[y2 * stride + x1 * components + offset] * (1.0 - px) +
-                (float) image[y2 * stride + x2 * components + offset] * px;
+    stride = width * components;
+    x1 = floor(x);
+    x2 = ceil(x);
+    y1 = floor(y);
+    y2 = ceil(y);
+    px = x - x1;
+    py = y - y1;
+    ys1 = y1 * stride;
+    ys2 = y2 * stride;
+    xc1 = x1 * components;
+    xc2 = x2 * components;
 
-    return (top * (1.0 - py)) + (bot * py);
+    top = (float) image[ys1 + xc1 + offset] * (1.0f - px) +
+          (float) image[ys1 + xc2 + offset] * px;
+    bot = (float) image[ys2 + xc1 + offset] * (1.0f - px) +
+          (float) image[ys2 + xc2 + offset] * px;
+    pix = (top * (1.0 - py)) + (bot * py);
+
+    return pix;
 }
 
 float meanPixelError(const unsigned char *original, const unsigned char *compressed, int width, int height, int components)
 {
-    float pme = 0.0;
+    int y, x, z, offset = 0;
+    float pme = 0.0f;
 
-    for (int y = 0; y < height; y++)
+    for (y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (x = 0; x < width; x++)
         {
-            for (int z = 0; z < components; z++)
+            for (z = 0; z < components; z++)
             {
-                int offset = y * width * components + x * components + z;
                 pme += abs(original[offset] - compressed[offset]);
+                offset++;
             }
         }
     }
+    pme /= offset;
 
-    return pme / (width * height * components);
+    return pme;
 }
 
 void defish(const unsigned char *input, unsigned char *output, int width, int height, int components, float strength, float zoom)
@@ -73,27 +83,30 @@ void defish(const unsigned char *input, unsigned char *output, int width, int he
     const int cx = width / 2;
     const int cy = height / 2;
     const float len = sqrt(width * width + height * height);
+    int y, x, z, offset = 0;
+    float dx, dy, r, theta = 1.0f;
 
-    for (int y = 0; y < height; y++)
+    for (y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (x = 0; x < width; x++)
         {
-            float dx = (cx - x) * zoom;
-            float dy = (cy - y) * zoom;
-            float r = sqrt(dx * dx + dy * dy) / len * strength;
-            float theta = 1.0;
+            dx = (cx - x) * zoom;
+            dy = (cy - y) * zoom;
+            r = sqrt(dx * dx + dy * dy) / len * strength;
+            theta = 1.0f;
 
-            if (r != 0.0)
+            if (r != 0.0f)
             {
                 theta = atan(r) / r;
             }
 
-            dx = clamp(0.0, (float) width / 2.0 - theta * dx, width);
-            dy = clamp(0.0, (float) height / 2.0 - theta * dy, height);
+            dx = clamp(0.0f, 0.5f * width - theta * dx, width);
+            dy = clamp(0.0f, 0.5f * height - theta * dy, height);
 
-            for (int z = 0; z < components; z++)
+            for (z = 0; z < components; z++)
             {
-                output[y * width * components + x * components + z] = interpolate(input, width, components, dx, dy, z);
+                output[offset] = interpolate(input, width, components, dx, dy, z);
+                offset++;
             }
         }
     }
@@ -101,18 +114,21 @@ void defish(const unsigned char *input, unsigned char *output, int width, int he
 
 long grayscale(const unsigned char *input, unsigned char **output, int width, int height)
 {
-    int stride = width * 3;
+    int y, x, offset = 0, offset3 = 0;
+    float r = 0.299f, g = 0.587f, b = 0.114f, c = 0.5f;
 
     *output = malloc(width * height);
 
-    for (int y = 0; y < height; y++)
+    for (y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (x = 0; x < width; x++)
         {
             // Y = 0.299R + 0.587G + 0.114B
-            (*output)[y * width + x] = input[y * stride + x * 3] * 0.299 +
-                                       input[y * stride + x * 3 + 1] * 0.587 +
-                                       input[y * stride + x * 3 + 2] * 0.114 + 0.5;
+            (*output)[offset] = input[offset3] * r +
+                                input[offset3 + 1] * g +
+                                input[offset3 + 2] * b + c;
+            offset++;
+            offset3 += 3;
         }
     }
 
@@ -121,16 +137,19 @@ long grayscale(const unsigned char *input, unsigned char **output, int width, in
 
 void scale(unsigned char *image, int width, int height, unsigned char **newImage, int newWidth, int newHeight)
 {
-    *newImage = malloc((unsigned long) newWidth * newHeight);
+    int y, x, oldY, oldX, offset = 0;
+    unsigned long size = (unsigned long) newWidth * newHeight;
+    *newImage = malloc(size);
 
-    for (int y = 0; y < newHeight; y++)
+    for (y = 0; y < newHeight; y++)
     {
-        for (int x = 0; x < newWidth; x++)
+        for (x = 0; x < newWidth; x++)
         {
-            int oldY = (float) y / newHeight * height + 0.5;
-            int oldX = (float) x / newWidth * width + 0.5;
+            oldY = (float) y / newHeight * height + 0.5f;
+            oldX = (float) x / newWidth * width + 0.5f;
 
-            (*newImage)[y * newWidth + x] = image[oldY * width + oldX];
+            (*newImage)[offset] = image[oldY * width + oldX];
+            offset++;
 
         }
     }
@@ -138,13 +157,15 @@ void scale(unsigned char *image, int width, int height, unsigned char **newImage
 
 void genHash(unsigned char *image, int width, int height, unsigned char **hash)
 {
-    *hash = malloc((unsigned long) width * height);
+    int y, x, pos;
+    unsigned long size = (unsigned long) width * height;
+    *hash = malloc(size);
 
-    for (int y = 0; y < height; y++)
+    for (y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (x = 0; x < width; x++)
         {
-            int pos = y * width + x;
+            pos = y * width + x;
 
             (*hash)[pos] = image[pos] < image[pos + 1];
         }
@@ -193,9 +214,9 @@ int jpegHashFromBuffer(unsigned char *imageBuf, long bufSize, unsigned char **ha
 
 unsigned int hammingDist(const unsigned char *hash1, const unsigned char *hash2, int hashLength)
 {
-    unsigned int dist = 0;
+    unsigned int dist = 0, x;
 
-    for (unsigned int x = 0; x < hashLength; x++)
+    for (x = 0; x < hashLength; x++)
     {
         if (hash1[x] != hash2[x])
         {
@@ -285,6 +306,8 @@ int checkJpegMagic(const unsigned char *buf, unsigned long size)
 
 unsigned long decodeJpeg(unsigned char *buf, unsigned long bufSize, unsigned char **image, int *width, int *height, int *jpegcs, int pixelFormat)
 {
+    unsigned long int pixSize = 0;
+    int row = 0;
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
     int row_stride;
@@ -318,7 +341,6 @@ unsigned long decodeJpeg(unsigned char *buf, unsigned long bufSize, unsigned cha
     *image = malloc(row_stride * (*height));
 
     // Read image row by row
-    int row = 0;
     while (cinfo.output_scanline < cinfo.output_height)
     {
         (void) jpeg_read_scanlines(&cinfo, buffer, 1);
@@ -329,12 +351,14 @@ unsigned long decodeJpeg(unsigned char *buf, unsigned long bufSize, unsigned cha
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
 
-    return row_stride * (*height);
+    pixSize = row_stride * (*height);
+
+    return pixSize;
 }
 
 unsigned long encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, int height, int pixelFormat, int quality, int jpegcs, int progressive, int optimize, int subsample)
 {
-    long unsigned int jpegSize = 0;
+    unsigned long int jpegSize = 0;
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
     JSAMPROW row_pointer[1];
@@ -439,6 +463,7 @@ int checkPpmMagic(const unsigned char *buf, unsigned long size)
 
 unsigned long decodePpm(unsigned char *buf, unsigned long bufSize, unsigned char **image, int *width, int *height)
 {
+    unsigned long int ppmSize = 0;
     unsigned long pos = 0, imageDataSize;
     int depth;
 
@@ -505,7 +530,9 @@ unsigned long decodePpm(unsigned char *buf, unsigned long bufSize, unsigned char
     // Copy pixel data
     memcpy((void *) *image, (void *) buf + pos, imageDataSize);
 
-    return (*width) * (*height);
+    ppmSize = (*width) * (*height);
+
+    return ppmSize;
 }
 
 enum filetype detectFiletype(const char *filename)
@@ -561,11 +588,13 @@ int getMetadata(const unsigned char *buf, unsigned int bufSize, unsigned char **
     unsigned int offsets[20];
     unsigned int sizes[20];
     unsigned int count = 0;
+    unsigned int marker;
+    int size, x;
 
     // Read through all the file markers
     while (pos < bufSize && count < 20)
     {
-        unsigned int marker = (buf[pos] << 8) + buf[pos + 1];
+        marker = (buf[pos] << 8) + buf[pos + 1];
 
         //printf("Marker %x at %u\n", marker, pos);
 
@@ -585,7 +614,7 @@ int getMetadata(const unsigned char *buf, unsigned int bufSize, unsigned char **
         else
         {
             // Marker has a custom size, read it in
-            int size = (buf[pos + 2] << 8) + buf[pos + 3];
+            size = (buf[pos + 2] << 8) + buf[pos + 3];
             //printf("Size is %i (%x)\n", size, size);
 
             // Save APP0+x and COM markers
@@ -612,7 +641,7 @@ int getMetadata(const unsigned char *buf, unsigned int bufSize, unsigned char **
 
     // Copy over all the metadata into the new buffer
     pos = 0;
-    for (int x = 0; x < count; x++)
+    for (x = 0; x < count; x++)
     {
         memcpy(((*meta) + pos), (buf + offsets[x]), sizes[x]);
         pos += sizes[x];

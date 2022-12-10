@@ -22,13 +22,14 @@ Contributions to this project are very welcome.
 
 ## Download
 
-You can download the latest source and binary releases from the [JPEG Archive releases page](https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress/releases).
+You can download the latest source and binary releases from the [JPEG Recompress releases page](https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress/releases).
 
 ## Utilities
 
 The following utilities are part of this project. All of them accept a `--help` parameter to see the available options.
 
 ### jpeg-recompress
+
 Compress JPEGs by re-encoding to the smallest JPEG quality while keeping _perceived_ visual quality the same and by making sure huffman tables are optimized. This is a __lossy__ operation, but the images are visually identical and it usually saves 30-70% of the size for JPEGs coming from a digital camera, particularly DSLRs. By default all EXIF/IPTC/XMP and color profile metadata is copied over, but this can be disabled to save more space if desired.
 
 There is no need for the input file to be a JPEG. In fact, you can use `jpeg-recompress` as a replacement for `cjpeg` by using PPM input and the `--ppm` option.
@@ -38,6 +39,7 @@ The better the quality of the input image is, the better the output will be.
 Some basic photo-related editing options are available, such as removing fisheye lens distortion.
 
 #### Demo
+
 Below are two 100% crops of [Nikon's D3x Sample Image 2](http://static.nikonusa.com/D3X_gallery/index.html). The left shows the original image from the camera, while the others show the output of `jpeg-recompress` with the `medium` quality setting and various comparison methods. By default SSIM is used, which lowers the file size by **88%**. The recompression algorithm chooses a JPEG quality of 80. By comparison the `veryhigh` quality setting chooses a JPEG quality of 93 and saves 70% of the file size.
 
 ![JPEG recompression comparison](https://cloud.githubusercontent.com/assets/106826/3633843/5fde26b6-0eff-11e4-8c98-f18dbbf7b510.png)
@@ -45,16 +47,43 @@ Below are two 100% crops of [Nikon's D3x Sample Image 2](http://static.nikonusa.
 Why are they different sizes? The default quality settings are set to average out to similar visual quality over large data sets. They may differ on individual photos (like above) because each metric considers different parts of the image to be more or less important for compression.
 
 #### Image Comparison Metrics
+
 The following metrics are available when using `jpeg-recompress`. SSIM is the default.
 
-Name     | Option        | Description
--------- | ------------- | -----------
-MPE      | `-m mpe`      | Mean pixel error (as used by [imgmin](https://github.com/rflynn/imgmin))
-SSIM     | `-m ssim`     | [Structural similarity](http://en.wikipedia.org/wiki/Structural_similarity) **DEFAULT**
-MS-SSIM* | `-m ms-ssim`  | Multi-scale structural similarity (slow!) ([2008 paper](http://foulard.ece.cornell.edu/publications/dmr_hvei2008_paper.pdf))
-SmallFry | `-m smallfry` | Linear-weighted BBCQ-like ([original project](https://github.com/dwbuiten/smallfry), [2011 BBCQ paper](http://spie.org/Publications/Proceedings/Paper/10.1117/12.872231))
+Name        | Option        | Description
+----------- | ------------- | -----------
+MPE         | `-m mpe`      | Mean pixel error (as used by [imgmin](https://github.com/rflynn/imgmin))
+SSIM        | `-m ssim`     | [Structural similarity](http://en.wikipedia.org/wiki/Structural_similarity)
+MS-SSIM*    | `-m ms-ssim`  | Multi-scale structural similarity (slow!) ([2008 paper](http://foulard.ece.cornell.edu/publications/dmr_hvei2008_paper.pdf))
+SmallFry    | `-m smallfry` | Linear-weighted BBCQ-like ([original project](https://github.com/dwbuiten/smallfry), [2011 BBCQ paper](http://spie.org/Publications/Proceedings/Paper/10.1117/12.872231) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
+SharpenBad  | `-m shbad`    | Sharpen discrepancies ([LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
+Correlation | `-m cor`      | Correlation ([LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
+CorSharpen  | `-m corsh`    | Correlation sharpen ([LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
+NHW         | `-m nhw`      | NHW convolutional metric ([original project](https://github.com/rcanut/NHW_Neatness_Metrics) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
+1 pair      | `-m ssimfry`  | `(ssim + smallfry) / 2`
+2 pair      | `-m ssimshb`  | `(ssim + shbad) / 2`
+SUMMARY     | `-m sum`      | `(ssim + smallfry + shbad + nhw) / 4` **DEFAULT**
 
 **Note**: The SmallFry algorithm may be [patented](http://www.jpegmini.com/main/technology) so use with caution.
+
+"Universal Scale" of metrics (UM):
+```
+0.0 ... (DIRTY) ... 0.5 ... (LOW) ... 0.76 ... (MEDIUM) ... 0.93 ... (HIGH) ... 0.99 ... (VERYHIGH) ... 1.0
+```
+Trends:
+```
+UM = 0.9*sqrt(PNSR)-4.8
+UM = -1.15*sqrt(MPE)+1.9
+UM = 1.8*cor_sigma(cor_sigma(cor_sigma(SSIM)))
+UM = 1.8*cor_sigma(cor_sigma(MS_SSIM))+0.3
+UM = 0.105*SMALLFRY-10.0
+UM = 2.6*sqrt(sqrt(sqrt(1.0/NHW)))-1.3
+UM = 3.0*cor_sigma(cor_sigma(COR))-1.5
+UM = 2.25*cor_sigma(cor_sigma(CORSH))-0.75
+UM = SHARPENBAD
+
+cor_sigma(M) = 1.0-sqrt(1.0-M*M)
+```
 
 #### Subsampling
 
@@ -95,6 +124,7 @@ jpeg-recompress --quiet image.jpg compressed.jpg
 ```
 
 ### jpeg-compare
+
 Compare two JPEG photos to judge how similar they are. The `fast` comparison method returns an integer from 0 to 99, where 0 is identical. PSNR, SSIM, and MS-SSIM return floats but require images to be the same dimensions.
 
 ```bash
@@ -109,6 +139,7 @@ jpeg-compare --method ssim image1.jpg image2.jpg
 ```
 
 ### jpeg-hash
+
 Create a hash of an image that can be used to compare it to other images quickly.
 
 ```bash
@@ -116,9 +147,11 @@ jpeg-hash image.jpg
 ```
 
 ### jpeg-zfpoint
+
 Compress JPEG files by re-encoding them to the lowest JPEG quality using the peculiarity jpeg (zero point) quantization feature.
 
 ### webp-compress
+
 Compress JPEGs by re-encoding to the smallest WEBP quality while keeping perceived visual quality the same.
 
 This is a lossy operation, but the images are visually identical and it usually saves >50% of the size for JPEGs coming from a digital camera, particularly DSLRs.
@@ -136,6 +169,7 @@ Some basic photo-related editing options are available, such as removing fisheye
  * [webp](https://developers.google.com/speed/webp/)
 
 #### Debian
+
 Debian users can install via `apt-get`:
 
 ```bash
@@ -153,6 +187,7 @@ cd ..
 ```
 
 ### Compiling (Linux and Mac OS X)
+
 The `Makefile` should work as-is on Ubuntu and Mac OS X. Other platforms may need to set the location of `libjpeg.a` or make other tweaks.
 
 ```bash
@@ -160,6 +195,7 @@ make
 ```
 
 ### Installation
+
 Install the binaries into `/usr/local/bin`:
 
 ```bash

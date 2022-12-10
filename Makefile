@@ -1,6 +1,6 @@
 PNAME = jpeg-recompress
 CC ?= gcc
-CFLAGS += -std=c99 -Wall -O3 -I/usr/include
+CFLAGS += -std=c99 -Wall -O3
 LIBIQA = -liqa
 LIBSFRY = -lsmallfry
 LIBJPEG = -ljpeg
