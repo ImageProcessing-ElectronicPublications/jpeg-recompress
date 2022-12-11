@@ -53,6 +53,7 @@ The following metrics are available when using `jpeg-recompress`. SSIM is the de
 Name        | Option        | Description
 ----------- | ------------- | -----------
 MPE         | `-m mpe`      | Mean pixel error (as used by [imgmin](https://github.com/rflynn/imgmin))
+PSNR        | `-m psnr`     | [Peak signal-to-noise ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio)
 SSIM        | `-m ssim`     | [Structural similarity](http://en.wikipedia.org/wiki/Structural_similarity)
 MS-SSIM*    | `-m ms-ssim`  | Multi-scale structural similarity (slow!) ([2008 paper](http://foulard.ece.cornell.edu/publications/dmr_hvei2008_paper.pdf))
 SmallFry    | `-m smallfry` | Linear-weighted BBCQ-like ([original project](https://github.com/dwbuiten/smallfry), [2011 BBCQ paper](http://spie.org/Publications/Proceedings/Paper/10.1117/12.872231) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
@@ -72,15 +73,15 @@ SUMMARY     | `-m sum`      | `(ssim + smallfry + shbad + nhw) / 4` **DEFAULT**
 ```
 Trends:
 ```
-UM = 0.9*sqrt(PNSR)-4.8
-UM = -1.15*sqrt(MPE)+1.9
-UM = 1.8*cor_sigma(cor_sigma(cor_sigma(SSIM)))
-UM = 1.8*cor_sigma(cor_sigma(MS_SSIM))+0.3
-UM = 0.105*SMALLFRY-10.0
-UM = 2.6*sqrt(sqrt(sqrt(1.0/NHW)))-1.3
+UM = 1.2*sqrt(PNSR)-6.85
+UM = -sqrt(MPE)+1.85
+UM = 2.15*cor_sigma(cor_sigma(cor_sigma(SSIM)))-0.1
+UM = 1.69*cor_sigma(cor_sigma(MS_SSIM))+0.12
+UM = 0.077*SMALLFRY-7.205
+UM = 2.43*sqrt(sqrt(sqrt(1.0/NHW)))-1.15
 UM = 3.0*cor_sigma(cor_sigma(COR))-1.5
 UM = 2.25*cor_sigma(cor_sigma(CORSH))-0.75
-UM = SHARPENBAD
+UM = 1.4*SHARPENBAD-0.08
 
 cor_sigma(M) = 1.0-sqrt(1.0-M*M)
 ```
