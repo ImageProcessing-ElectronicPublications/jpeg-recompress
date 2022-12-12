@@ -781,37 +781,37 @@ float RescaleMetric(int currentmethod, float value)
     case PSNR:
         value = sqrt(value);
         value *= 1.16f;
-        value -= 6.52f;
+        value -= 6.45f;
         break;
     case MPE:
         value = -sqrt(value);
-        value *= 0.92f;
-        value += 1.81f;
+        value *= 0.87f;
+        value += 1.75f;
         break;
     case SSIM:
         value = cor_sigma(value);
         value = cor_sigma(value);
         value = cor_sigma(value);
-        value *= 2.25f;
-        value -= 0.2f;
+        value *= 2.34f;
+        value -= 0.22f;
         break;
     case MS_SSIM:
         value = cor_sigma(value);
         value = cor_sigma(value);
-        value *= 1.74f;
-        value += 0.1f;
+        value *= 1.86f;
+        value -= 0.02f;
         break;
     case SMALLFRY:
-        value *= 0.0755f;
-        value -= 7.0f;
+        value *= 0.075f;
+        value -= 6.95f;
         break;
     case NHW:
         value = 1.0f / value;
         value = sqrt(value);
         value = sqrt(value);
         value = sqrt(value);
-        value *= 2.37f;
-        value -= 1.06f;
+        value *= 2.28f;
+        value -= 0.98f;
         break;
     case COR:
         value = cor_sigma(value);
@@ -826,8 +826,8 @@ float RescaleMetric(int currentmethod, float value)
         value -= 0.75f;
         break;
     case SHARPENBAD:
-        value *= 1.45f;
-        value -= 0.15f;
+        value *= 1.46f;
+        value -= 0.21f;
         break;
     }
     return value;
