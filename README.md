@@ -73,15 +73,15 @@ SUMMARY     | `-m sum`      | `(ssim + smallfry + shbad + nhw) / 4` **DEFAULT**
 ```
 Trends:
 ```
-UM = 1.2*sqrt(PNSR)-6.85
-UM = -sqrt(MPE)+1.85
-UM = 2.15*cor_sigma(cor_sigma(cor_sigma(SSIM)))-0.1
-UM = 1.69*cor_sigma(cor_sigma(MS_SSIM))+0.12
-UM = 0.077*SMALLFRY-7.205
-UM = 2.43*sqrt(sqrt(sqrt(1.0/NHW)))-1.15
+UM = 1.16*sqrt(PNSR)-6.52
+UM = -0.92*sqrt(MPE)+1.81
+UM = 2.25*cor_sigma(cor_sigma(cor_sigma(SSIM)))-0.2
+UM = 1.74*cor_sigma(cor_sigma(MS_SSIM))+0.1
+UM = 0.0755*SMALLFRY-7.0
+UM = 2.37*sqrt(sqrt(sqrt(1.0/NHW)))-1.06
 UM = 3.0*cor_sigma(cor_sigma(COR))-1.5
 UM = 2.25*cor_sigma(cor_sigma(CORSH))-0.75
-UM = 1.4*SHARPENBAD-0.08
+UM = 1.45*SHARPENBAD-0.15
 
 cor_sigma(M) = 1.0-sqrt(1.0-M*M)
 ```
