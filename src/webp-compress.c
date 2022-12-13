@@ -23,7 +23,7 @@ void usage(char *progname)
     printf("  -l, --loops [arg]            set the number of runs to attempt [8]\n");
     printf("  -m, --method [arg]           set comparison method to one of:\n");
     printf("                               'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'ssimfry',\n");
-    printf("                               'shbad', 'nhw', 'ssimshb', 'cor', 'corsh', 'sum' [sum]\n");
+    printf("                               'shbad', 'nhw', 'ssimshb', 'sum' [sum]\n");
     printf("  -n, --min [arg]              minimum quality [1]\n");
     printf("  -q, --quality [arg]          set a quality preset: low, medium, subhigh, high, veryhigh [medium]\n");
     printf("  -r, --ppm                    parse input as PPM\n");
@@ -315,7 +315,7 @@ int main (int argc, char **argv)
             info(quiet, "Final optimized ");
 
         // Measure quality difference
-        metric = MetricCalc(method, originalGray, compressedGray, width, height, 1, 2);
+        metric = MetricCalc(method, originalGray, compressedGray, width, height, 1);
         umetric = RescaleMetric(method, metric);
         info(quiet, MetricName(method));
 

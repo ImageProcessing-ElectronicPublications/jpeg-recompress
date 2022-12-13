@@ -25,11 +25,10 @@ void usage(char *progname)
     printf("  -h, --help                   output program help\n");
     printf("  -m, --method [arg]           set comparison method to one of:\n");
     printf("                               'fast', 'psnr', 'mpe', 'ssim', 'ms-ssim', 'smallfry'\n");
-    printf("                               'ssimfry', 'shbad', 'nhw', 'ssimshb', 'cor', 'corsh', 'sum' [fast]\n");
+    printf("                               'ssimfry', 'shbad', 'nhw', 'ssimshb', 'sum' [fast]\n");
     printf("  -n, --norm                   UM scale metric\n");
     printf("  -r, --ppm                    parse first input as PPM instead of JPEG\n");
     printf("  -s, --size [arg]             set fast comparison image hash size\n");
-    printf("  -A, --radius [arg]           set aperture size (for corsh)\n");
     printf("  -T, --input-filetype [arg]   set first input file type to one of 'auto', 'jpeg', 'ppm' [auto]\n");
     printf("  -U, --second-filetype [arg]  set second input file type to one of 'auto', 'jpeg', 'ppm' [auto]\n");
     printf("  -V, --version                output program version\n");
@@ -45,7 +44,6 @@ int main (int argc, char **argv)
 
     // Hash size when method is FAST
     int size = 16;
-    int radius = 2;
 
     unsigned char *imageBuf1, *imageBuf2;
     long bufSize1, bufSize2;
@@ -55,7 +53,7 @@ int main (int argc, char **argv)
     enum filetype inputFiletype1 = FILETYPE_AUTO;
     enum filetype inputFiletype2 = FILETYPE_AUTO;
 
-    const char *optstring = "VhS:m:nA:rT:U:";
+    const char *optstring = "VhS:m:nrT:U:";
     static const struct option opts[] =
     {
         { "version", no_argument, 0, 'V' },
@@ -63,7 +61,6 @@ int main (int argc, char **argv)
         { "size", required_argument, 0, 'S' },
         { "method", required_argument, 0, 'm' },
         { "norm", no_argument, 0, 'n' },
-        { "radius", required_argument, 0, 'A' },
         { "ppm", no_argument, 0, 'r' },
         { "input-filetype", required_argument, 0, 'T' },
         { "second-filetype", required_argument, 0, 'U' },
@@ -92,9 +89,6 @@ int main (int argc, char **argv)
             break;
         case 'n':
             umscale = 1;
-            break;
-        case 'A':
-            radius = atoi(optarg);
             break;
         case 'r':
             if (inputFiletype1 != FILETYPE_AUTO)
@@ -176,9 +170,7 @@ int main (int argc, char **argv)
     case SSIMFRY:
     case SSIMSHBAD:
     case SUMMET:
-    case COR:
-    case CORSHARP:
-        return compareFromBuffer(method, imageBuf1, bufSize1, imageBuf2, bufSize2, printPrefix, umscale, radius, inputFiletype1, inputFiletype2);
+        return compareFromBuffer(method, imageBuf1, bufSize1, imageBuf2, bufSize2, printPrefix, umscale, inputFiletype1, inputFiletype2);
     default:
         error("unknown comparison method!");
         return 255;

@@ -1,4 +1,4 @@
-.TH "jpeg-compare" 2.4 "03 Aug 2022" "User manual"
+.TH "jpeg-compare" 2.5.5 "14 Dec 2022" "User manual"
 .SH NAME
 jpeg-compare
 .SH DESCRIPTION
@@ -13,7 +13,7 @@ jpeg-compare [options] image1.jpg image2.jpg
 output program help
 .TP
 \fB\-m\fR, \fB\-\-method\fR [arg]
-set comparison method to one of 'fast', 'psnr', 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'cor', 'corsh'. 'sum' [fast]
+set comparison method to one of 'fast', 'psnr', 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'sum' [fast]
 .TP
 \fB\-n\fR, \fB\-\-norm\fR
 UM scale metric
@@ -23,9 +23,6 @@ parse first input as PPM instead of JPEG
 .TP
 \fB\-s\fR, \fB\-\-size\fR [arg]
 set fast comparison image hash size
-.TP
-\fB\-A\fR, \fB\-\-radius\fR [arg]
-set aperture size (for corsh)
 .TP
 \fB\-T\fR, \fB\-\-input-filetype\fR [arg]
 set first input file type to one of 'auto', 'jpeg', 'ppm' [auto]
@@ -53,6 +50,32 @@ Calculate SSIM:
 .PP
 .I
 jpeg-compare --method ssim image1.jpg image2.jpg
+.SH NOTES
+"Universal Scale" of metrics (UM):
+  0.0
+  ... (DIRTY) ...
+  0.5
+  ... (LOW) ...
+  0.75
+  ... (MEDIUM) ...
+  0.875
+  ... (SUBHIGH) ...
+  0.9375
+  ... (HIGH) ...
+  0.96875
+  ... (VERYHIGH) ...
+  1.0
+.PP
+Trends:
+
+  UM = 1.10*sqrt(PNSR)-6.07
+  UM = -0.85*sqrt(MPE)+1.73
+  UM = 2.38*cor_sigma(cor_sigma(cor_sigma(SSIM)))-0.24
+  UM = 1.87*cor_sigma(cor_sigma(MS_SSIM))-0.02
+  UM = 0.0747*SMALLFRY-6.91
+  UM = 2.28*sqrt(sqrt(sqrt(1.0/NHW)))-0.97
+  UM = 1.48*SHARPENBAD-0.26
+  cor_sigma(M) = 1.0-sqrt(1.0-M*M)
 .SH COPYRIGHT
  JPEG-Archive is copyright © 2015 Daniel G. Taylor
  Image Quality Assessment (IQA) is copyright 2011, Tom Distler (http://tdistler.com)
@@ -62,4 +85,5 @@ jpeg-compare --method ssim image1.jpg image2.jpg
  jpeg-hash,
  jpeg-recompress,
  jpeg-zfpoint,
+ webp-compress,
  cjpeg

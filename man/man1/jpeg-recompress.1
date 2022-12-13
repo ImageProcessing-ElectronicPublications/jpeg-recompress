@@ -1,4 +1,4 @@
-.TH "jpeg-recompress" 2.4 "03 Aug 2022" "User manual"
+.TH "jpeg-recompress" 2.5.5 "14 Dec 2022" "User manual"
 .SH NAME
 jpeg-recompress
 .SH DESCRIPTION
@@ -31,7 +31,7 @@ output program help
 set the number of runs to attempt [6]
 .TP
 \fB\-m\fR, \fB\-\-method\fR [arg]
-set comparison method to one of 'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'cor', 'corsh', 'sum' [sum]
+set comparison method to one of 'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'sum' [sum]
 .TP
 \fB\-n\fR, \fB\-\-min\fR [arg]
 minimum JPEG quality [40]
@@ -121,6 +121,32 @@ Disable all output except for errors:
 .PP
 .I
 jpeg-recompress --quiet image.jpg compressed.jpg
+.SH NOTES
+"Universal Scale" of metrics (UM):
+  0.0
+  ... (DIRTY) ...
+  0.5
+  ... (LOW) ...
+  0.75
+  ... (MEDIUM) ...
+  0.875
+  ... (SUBHIGH) ...
+  0.9375
+  ... (HIGH) ...
+  0.96875
+  ... (VERYHIGH) ...
+  1.0
+.PP
+Trends:
+
+  UM = 1.10*sqrt(PNSR)-6.07
+  UM = -0.85*sqrt(MPE)+1.73
+  UM = 2.38*cor_sigma(cor_sigma(cor_sigma(SSIM)))-0.24
+  UM = 1.87*cor_sigma(cor_sigma(MS_SSIM))-0.02
+  UM = 0.0747*SMALLFRY-6.91
+  UM = 2.28*sqrt(sqrt(sqrt(1.0/NHW)))-0.97
+  UM = 1.48*SHARPENBAD-0.26
+  cor_sigma(M) = 1.0-sqrt(1.0-M*M)
 .SH COPYRIGHT
  JPEG-Archive is copyright © 2015 Daniel G. Taylor
  Image Quality Assessment (IQA) is copyright 2011, Tom Distler (http://tdistler.com)
@@ -130,4 +156,5 @@ jpeg-recompress --quiet image.jpg compressed.jpg
  jpeg-compare,
  jpeg-hash,
  jpeg-zfpoint,
+ webp-compress,
  cjpeg

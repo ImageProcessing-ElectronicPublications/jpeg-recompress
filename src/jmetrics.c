@@ -767,10 +767,6 @@ enum METHOD parseMethod(const char *s)
         return SSIMSHBAD;
     if (!strcmp("sum", s))
         return SUMMET;
-    if (!strcmp("cor", s))
-        return COR;
-    if (!strcmp("corsh", s))
-        return CORSHARP;
     return UNKNOWN;
 }
 
@@ -780,54 +776,42 @@ float RescaleMetric(int currentmethod, float value)
     {
     case PSNR:
         value = sqrt(value);
-        value *= 1.16f;
-        value -= 6.45f;
+        value *= 1.10f;
+        value -= 6.07f;
         break;
     case MPE:
         value = -sqrt(value);
-        value *= 0.87f;
-        value += 1.75f;
+        value *= 0.85f;
+        value += 1.73f;
         break;
     case SSIM:
-        value = cor_sigma(value);
-        value = cor_sigma(value);
-        value = cor_sigma(value);
-        value *= 2.34f;
-        value -= 0.22f;
+        value = MetricSigma(value);
+        value = MetricSigma(value);
+        value = MetricSigma(value);
+        value *= 2.38f;
+        value -= 0.24f;
         break;
     case MS_SSIM:
-        value = cor_sigma(value);
-        value = cor_sigma(value);
-        value *= 1.86f;
+        value = MetricSigma(value);
+        value = MetricSigma(value);
+        value *= 1.87f;
         value -= 0.02f;
         break;
     case SMALLFRY:
-        value *= 0.075f;
-        value -= 6.95f;
+        value *= 0.0747f;
+        value -= 6.91f;
         break;
     case NHW:
         value = 1.0f / value;
         value = sqrt(value);
         value = sqrt(value);
         value = sqrt(value);
-        value *= 2.28f;
-        value -= 0.98f;
-        break;
-    case COR:
-        value = cor_sigma(value);
-        value = cor_sigma(value);
-        value *= 3.0f;
-        value -= 1.5f;
-        break;
-    case CORSHARP:
-        value = cor_sigma(value);
-        value = cor_sigma(value);
-        value *= 2.25f;
-        value -= 0.75f;
+        value *= 2.23f;
+        value -= 0.95f;
         break;
     case SHARPENBAD:
-        value *= 1.46f;
-        value -= 0.21f;
+        value *= 1.48f;
+        value -= 0.26f;
         break;
     }
     return value;
@@ -862,12 +846,6 @@ char* MetricName(int currentmethod)
     case NHW:
         value = "NHW";
         break;
-    case COR:
-        value = "COR";
-        break;
-    case CORSHARP:
-        value = "CORSHARP";
-        break;
     case SSIMFRY:
         value = "SSIMFRY";
         break;
@@ -881,7 +859,26 @@ char* MetricName(int currentmethod)
     return value;
 }
 
-float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int width, int height, int components, int radius)
+float MetricSigma(float cor)
+{
+    float sigma;
+
+
+    cor = (cor < 0.0f) ? -cor : cor;
+    sigma = cor;
+    if (cor > 1.0f)
+    {
+        cor = 1.0f / cor;
+        sigma = 1.0f - sqrt(1.0f - cor * cor);
+        sigma = 1.0f / sigma;
+    } else {
+        sigma = 1.0f - sqrt(1.0f - cor * cor);
+    }
+
+    return sigma;
+}
+
+float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int width, int height, int components)
 {
     float diff, tmetric, tm1, tm2, tm3, tm4;
 
@@ -902,12 +899,6 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
         break;
     case NHW:
         diff = metric_nhw(image1, image2, width, height);
-        break;
-    case COR:
-        diff = metric_cor(image1, image2, width, height);
-        break;
-    case CORSHARP:
-        diff = metric_corsharp(image1, image2, width, height, radius);
         break;
     case MS_SSIM:
         diff = iqa_ms_ssim(image1, image2, width, height, width * components, 0);
@@ -974,7 +965,7 @@ int compareFastFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char
     return 0;
 }
 
-int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int umscale, int radius, enum filetype inputFiletype1, enum filetype inputFiletype2)
+int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int umscale, enum filetype inputFiletype1, enum filetype inputFiletype2)
 {
     unsigned char *image1, *image2, *image1Gray = NULL, *image2Gray = NULL;
     int width1, width2, height1, height2;
@@ -993,8 +984,6 @@ int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsig
     case SMALLFRY:
     case SHARPENBAD:
     case NHW:
-    case COR:
-    case CORSHARP:
     default:
         format = JCS_GRAYSCALE;
         components = 1;
@@ -1036,7 +1025,7 @@ int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsig
     }
 
     // Calculate and print comparison
-    diff = MetricCalc(method, image1, image2, width1, height1, components, radius);
+    diff = MetricCalc(method, image1, image2, width1, height1, components);
     if (umscale)
         diff = RescaleMetric(method, diff);
     if (printPrefix)

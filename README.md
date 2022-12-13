@@ -58,8 +58,6 @@ SSIM        | `-m ssim`     | [Structural similarity](http://en.wikipedia.org/wi
 MS-SSIM*    | `-m ms-ssim`  | Multi-scale structural similarity (slow!) ([2008 paper](http://foulard.ece.cornell.edu/publications/dmr_hvei2008_paper.pdf))
 SmallFry    | `-m smallfry` | Linear-weighted BBCQ-like ([original project](https://github.com/dwbuiten/smallfry), [2011 BBCQ paper](http://spie.org/Publications/Proceedings/Paper/10.1117/12.872231) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
 SharpenBad  | `-m shbad`    | Sharpen discrepancies ([LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
-Correlation | `-m cor`      | Correlation ([LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
-CorSharpen  | `-m corsh`    | Correlation sharpen ([LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
 NHW         | `-m nhw`      | NHW convolutional metric ([original project](https://github.com/rcanut/NHW_Neatness_Metrics) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
 1 pair      | `-m ssimfry`  | `(ssim + smallfry) / 2`
 2 pair      | `-m ssimshb`  | `(ssim + shbad) / 2`
@@ -73,15 +71,13 @@ SUMMARY     | `-m sum`      | `(ssim + smallfry + shbad + nhw) / 4` **DEFAULT**
 ```
 Trends:
 ```
-UM = 1.16*sqrt(PNSR)-6.45
-UM = -0.87*sqrt(MPE)+1.75
-UM = 2.34*cor_sigma(cor_sigma(cor_sigma(SSIM)))-0.22
-UM = 1.86*cor_sigma(cor_sigma(MS_SSIM))-0.02
-UM = 0.075*SMALLFRY-6.95
+UM = 1.10*sqrt(PNSR)-6.07
+UM = -0.85*sqrt(MPE)+1.73
+UM = 2.38*cor_sigma(cor_sigma(cor_sigma(SSIM)))-0.24
+UM = 1.87*cor_sigma(cor_sigma(MS_SSIM))-0.02
+UM = 0.0747*SMALLFRY-6.91
 UM = 2.28*sqrt(sqrt(sqrt(1.0/NHW)))-0.97
-UM = 3.0*cor_sigma(cor_sigma(COR))-1.5
-UM = 2.25*cor_sigma(cor_sigma(CORSH))-0.75
-UM = 1.46*SHARPENBAD-0.21
+UM = 1.48*SHARPENBAD-0.26
 
 cor_sigma(M) = 1.0-sqrt(1.0-M*M)
 ```

@@ -1,6 +1,13 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.5.5 "sigma"
+
+    Move `sigma`-function from `libsmallfry` to `jmetrics.a`
+    Research: correct trends UM (32 images)
+    Remove metrics `cor` and `corsh`
+    2022, zvezdochiot
+
 2.5.4 "near"
 
     Research: correct trends UM (24 images)

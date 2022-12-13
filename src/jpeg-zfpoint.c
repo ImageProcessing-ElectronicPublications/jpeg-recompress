@@ -271,13 +271,13 @@ int main (int argc, char **argv)
     compressedSize = encodeJpeg(&compressed, original, width, height, JCS_RGB, max, jpegcs, 0, 1, subsample);
     compressedGraySize = decodeJpeg(compressed, compressedSize, &compressedGray, &width, &height, &jpegcst, JCS_GRAYSCALE);
     maxmetric = metric_corsharp(originalGray, compressedGray, width, height, shRadius);
-    maxmetric = cor_sigma(maxmetric);
+    maxmetric = MetricSigma(maxmetric);
     qmetric = maxmetric / (float)max;
     cmpMax = 0;
     compressedSize = encodeJpeg(&compressed, original, width, height, JCS_RGB, min, jpegcs, 0, 1, subsample);
     compressedGraySize = decodeJpeg(compressed, compressedSize, &compressedGray, &width, &height, &jpegcst, JCS_GRAYSCALE);
     metric = metric_corsharp(originalGray, compressedGray, width, height, shRadius);
-    metric = cor_sigma(metric);
+    metric = MetricSigma(metric);
     cmpMin = qmetric * (float)min - metric;
     for (attempt = attempts - 1; attempt >= 0; --attempt)
     {
@@ -304,7 +304,7 @@ int main (int argc, char **argv)
 
         // Measure quality difference
         metric = metric_corsharp(originalGray, compressedGray, width, height, shRadius);
-        metric = cor_sigma(metric);
+        metric = MetricSigma(metric);
         cmpQ = qmetric * (float)quality - metric;
         info(quiet, "zfpoint");
 

@@ -64,9 +64,7 @@ enum METHOD
     NHW,
     SSIMFRY,
     SSIMSHBAD,
-    SUMMET,
-    COR,
-    CORSHARP
+    SUMMET
 };
 
 // Target quality (SSIM) value
@@ -200,9 +198,10 @@ float setTargetFromPreset(int preset);
 enum METHOD parseMethod(const char *s);
 float RescaleMetric(int currentmethod, float value);
 char* MetricName(int currentmethod);
-float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int width, int height, int components, int radius);
+float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int width, int height, int components);
+float MetricSigma(float cor);
 int compareFastFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int size);
-int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int umscale, int radius, enum filetype inputFiletype1, enum filetype inputFiletype2);
+int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int umscale, enum filetype inputFiletype1, enum filetype inputFiletype2);
 float waverage4(float x1, float x2, float x3, float x4);
 
 #endif
