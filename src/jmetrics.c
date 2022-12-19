@@ -427,6 +427,9 @@ unsigned long encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, in
         jpeg_simple_progression(&cinfo);
     }
 
+    jpeg_set_quality(&cinfo, quality, TRUE);
+    jpeg_set_colorspace (&cinfo, jpegcs);
+
     if (subsample == SUBSAMPLE_444)
     {
         cinfo.comp_info[0].h_samp_factor = 1;
@@ -436,9 +439,6 @@ unsigned long encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, in
         cinfo.comp_info[2].h_samp_factor = 1;
         cinfo.comp_info[2].v_samp_factor = 1;
     }
-
-    jpeg_set_quality(&cinfo, quality, TRUE);
-    jpeg_set_colorspace (&cinfo, jpegcs);
 
     // Start the compression
     jpeg_start_compress(&cinfo, TRUE);

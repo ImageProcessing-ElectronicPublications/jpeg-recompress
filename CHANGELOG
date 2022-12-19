@@ -1,6 +1,10 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.5.6 "subsample"
+
+    Fix IPEP/#1: ignores subsampling option
+
 2.5.5 "sigma"
 
     Move `sigma`-function from `libsmallfry` to `jmetrics.a`

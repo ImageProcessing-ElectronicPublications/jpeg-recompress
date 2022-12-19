@@ -27,7 +27,6 @@ void usage(char *progname)
     printf("  -n, --min [arg]              minimum quality [1]\n");
     printf("  -q, --quality [arg]          set a quality preset: low, medium, subhigh, high, veryhigh [medium]\n");
     printf("  -r, --ppm                    parse input as PPM\n");
-    printf("  -s, --strip                  strip metadata\n");
     printf("  -t, --target [arg]           set target quality [0.75]\n");
     printf("  -x, --max [arg]              maximum quality [99]\n");
     printf("  -z, --zoom [arg]             set defish zoom [1.0]\n");
