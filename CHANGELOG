@@ -1,6 +1,10 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.5.7 "bisection"
+
+    Fix bisection
+
 2.5.6 "subsample"
 
     Fix IPEP/#1: ignores subsampling option

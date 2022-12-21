@@ -281,7 +281,7 @@ int main (int argc, char **argv)
     cmpMin = qmetric * (float)min - metric;
     for (attempt = attempts - 1; attempt >= 0; --attempt)
     {
-        quality = min + (max - min) / 2;
+        quality = (max + min + 1) / 2;
         progressive = attempt ? 0 : !noProgressive;
         optimize = accurate ? 1 : (attempt ? 0 : 1);
 
@@ -315,12 +315,12 @@ int main (int argc, char **argv)
 
         if (cmpMin < cmpMax)
         {
-            min = MIN(quality + 1, max);
+            min = MIN(quality, max);
             cmpMin = cmpQ;
         }
         else
         {
-            max = MAX(quality - 1, min);
+            max = MAX(quality, min);
             cmpMax = cmpQ;
         }
 

@@ -300,7 +300,7 @@ int main (int argc, char **argv)
     max = jpegMax;
     for (attempt = attempts - 1; attempt >= 0; --attempt)
     {
-        quality = min + (max - min) / 2;
+        quality = (max + min + 1) / 2;
 
         /* Terminate early once bisection interval is a singleton. */
         if (min == max)
@@ -365,11 +365,11 @@ int main (int argc, char **argv)
                     return 1;
                 }
             }
-            min = MIN(quality + 1, max);
+            min = MIN(quality, max);
         }
         else
         {
-            max = MAX(quality - 1, min);
+            max = MAX(quality, min);
         }
 
         // If we aren't done yet, then free the image data
