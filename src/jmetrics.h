@@ -21,7 +21,7 @@
 #define JMETRICS_H
 
 #ifndef JMVERSION
-#define JMVERSION "2.5.7"
+#define JMVERSION "2.5.8"
 #endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -61,6 +61,7 @@ enum METHOD
     MS_SSIM,
     SMALLFRY,
     SHARPENBAD,
+    COR,
     NHW,
     SSIMFRY,
     SSIMSHBAD,
@@ -110,7 +111,7 @@ void defish(const unsigned char *input, unsigned char *output, int width, int he
     Convert an RGB image to grayscale. Assumes 8-bit color components,
     3 color components and a row stride of width * 3.
 */
-long grayscale(const unsigned char *input, unsigned char **output, int width, int height);
+unsigned long int grayscale(const unsigned char *input, unsigned char **output, int width, int height);
 
 /*
     Generate an image hash given a filename. This is a convenience
@@ -147,35 +148,35 @@ void error(const char *format, ...);
 /*
     Read a file into a buffer and return the length.
 */
-long readFile(char *name, void **buffer);
+unsigned long int readFile(char *name, void **buffer);
 
 /*
     Decode a buffer into a JPEG image with the given pixel format.
     Returns the size of the image pixel array.
     See libjpeg.txt for a (very long) explanation.
 */
-int checkJpegMagic(const unsigned char *buf, unsigned long size);
-unsigned long decodeJpeg(unsigned char *buf, unsigned long bufSize, unsigned char **image, int *width, int *height, int *jpegcs, int pixelFormat);
+int checkJpegMagic(const unsigned char *buf, unsigned long int size);
+unsigned long int decodeJpeg(unsigned char *buf, unsigned long int bufSize, unsigned char **image, int *width, int *height, int *jpegcs, int pixelFormat);
 
 /*
     Decode buffer into a PPM image.
     Returns the size of the image pixel array.
 */
-int checkPpmMagic(const unsigned char *buf, unsigned long size);
-unsigned long decodePpm(unsigned char *buf, unsigned long bufSize, unsigned char **image, int *width, int *height);
+int checkPpmMagic(const unsigned char *buf, unsigned long int size);
+unsigned long int decodePpm(unsigned char *buf, unsigned long int bufSize, unsigned char **image, int *width, int *height);
 
 /*
     Encode a buffer of image pixels into a JPEG.
 */
-unsigned long encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, int height, int pixelFormat, int quality, int jpegcs, int progressive, int optimize, int subsample);
+unsigned long int encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, int height, int pixelFormat, int quality, int jpegcs, int progressive, int optimize, int subsample);
 
 /* Automatically detect the file type of a given file. */
 enum filetype detectFiletype(const char *filename);
-enum filetype detectFiletypeFromBuffer(unsigned char *buf, long bufSize);
+enum filetype detectFiletypeFromBuffer(unsigned char *buf, unsigned long int bufSize);
 
 /* Decode an image file with a given format. */
-unsigned long decodeFile(const char *filename, unsigned char **image, enum filetype type, int *width, int *height, int pixelFormat);
-unsigned long decodeFileFromBuffer(unsigned char *buf, long bufSize, unsigned char **image, enum filetype type, int *width, int *height, int *jpegcs, int pixelFormat);
+unsigned long int decodeFile(const char *filename, unsigned char **image, enum filetype type, int *width, int *height, int pixelFormat);
+unsigned long int decodeFileFromBuffer(unsigned char *buf, unsigned long int bufSize, unsigned char **image, enum filetype type, int *width, int *height, int *jpegcs, int pixelFormat);
 
 /*
     Get JPEG metadata (EXIF, IPTC, XMP, etc) and return a buffer

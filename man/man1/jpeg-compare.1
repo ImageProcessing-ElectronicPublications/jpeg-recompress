@@ -1,4 +1,4 @@
-.TH "jpeg-compare" 2.5.5 "14 Dec 2022" "User manual"
+.TH "jpeg-compare" 2.5.8 "13 Jan 2023" "User manual"
 .SH NAME
 jpeg-compare
 .SH DESCRIPTION
@@ -13,7 +13,7 @@ jpeg-compare [options] image1.jpg image2.jpg
 output program help
 .TP
 \fB\-m\fR, \fB\-\-method\fR [arg]
-set comparison method to one of 'fast', 'psnr', 'mpe', 'ssim', 'ms-ssim', 'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'sum' [fast]
+set comparison method to one of 'fast', 'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad', `cor`, 'nhw', 'ssimfry', 'ssimshb', 'sum' [fast]
 .TP
 \fB\-n\fR, \fB\-\-norm\fR
 UM scale metric
@@ -68,14 +68,16 @@ jpeg-compare --method ssim image1.jpg image2.jpg
 .PP
 Trends:
 
-  UM = 1.10*sqrt(PNSR)-6.07
-  UM = -0.85*sqrt(MPE)+1.73
-  UM = 2.38*cor_sigma(cor_sigma(cor_sigma(SSIM)))-0.24
-  UM = 1.87*cor_sigma(cor_sigma(MS_SSIM))-0.02
-  UM = 0.0747*SMALLFRY-6.91
-  UM = 2.28*sqrt(sqrt(sqrt(1.0/NHW)))-0.97
-  UM = 1.48*SHARPENBAD-0.26
-  cor_sigma(M) = 1.0-sqrt(1.0-M*M)
+  UM = 2.79 * sqrt(sqrt(1.0 / MPE)) - 1.54
+  UM = 0.95 * sqrt(PNSR) - 4.97
+  UM = 1.95 * cor_sigma(cor_sigma(cor_sigma(SSIM))) - 0.20
+  UM = 1.50 * cor_sigma(cor_sigma(MS_SSIM)) + 0.06
+  UM = 0.0643 * SMALLFRY - 5.86
+  UM = 1.11 * SHARPENBAD - 0.06
+  UM = 2.86 * cor_sigma(cor_sigma(COR)) - 1.38
+  UM = 0.37 * sqrt(sqrt(1.0 / NHW)) - 0.39
+    cor_sigma(M) = 1.0 - sqrt(1.0 - M * M)
+
 .SH COPYRIGHT
  JPEG-Archive is copyright © 2015 Daniel G. Taylor
  Image Quality Assessment (IQA) is copyright 2011, Tom Distler (http://tdistler.com)

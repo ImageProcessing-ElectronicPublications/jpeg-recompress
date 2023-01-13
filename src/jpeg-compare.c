@@ -24,8 +24,8 @@ void usage(char *progname)
     printf("options:\n\n");
     printf("  -h, --help                   output program help\n");
     printf("  -m, --method [arg]           set comparison method to one of:\n");
-    printf("                               'fast', 'psnr', 'mpe', 'ssim', 'ms-ssim', 'smallfry'\n");
-    printf("                               'ssimfry', 'shbad', 'nhw', 'ssimshb', 'sum' [fast]\n");
+    printf("                               'fast', 'mpe', 'psnr', 'ssim', 'ms-ssim', 'smallfry', 'shbad',\n");
+    printf("                               `cor`, 'nhw', 'ssimfry', 'ssimshb', 'sum' [fast]\n");
     printf("  -n, --norm                   UM scale metric\n");
     printf("  -r, --ppm                    parse first input as PPM instead of JPEG\n");
     printf("  -s, --size [arg]             set fast comparison image hash size\n");
@@ -166,6 +166,7 @@ int main (int argc, char **argv)
     case MS_SSIM:
     case SMALLFRY:
     case SHARPENBAD:
+    case COR:
     case NHW:
     case SSIMFRY:
     case SSIMSHBAD:

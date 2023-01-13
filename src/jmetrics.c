@@ -59,21 +59,27 @@ int interpolate(const unsigned char *image, int width, int components, float x, 
 
 float meanPixelError(const unsigned char *original, const unsigned char *compressed, int width, int height, int components)
 {
-    int y, x, z, offset = 0;
-    float pme = 0.0f;
+    int y, x, z;
+    float delta, pmel, pme;
+    unsigned long int k;
 
+    k = 0;
+    pme = 0.0f;
     for (y = 0; y < height; y++)
     {
+        pmel = 0.0f;
         for (x = 0; x < width; x++)
         {
             for (z = 0; z < components; z++)
             {
-                pme += abs(original[offset] - compressed[offset]);
-                offset++;
+                delta = abs((float)original[k] - (float)compressed[k]);
+                pmel += delta;
+                k++;
             }
         }
+        pme += pmel;
     }
-    pme /= offset;
+    pme /= (float)k;
 
     return pme;
 }
@@ -83,9 +89,11 @@ void defish(const unsigned char *input, unsigned char *output, int width, int he
     const int cx = width / 2;
     const int cy = height / 2;
     const float len = sqrt(width * width + height * height);
-    int y, x, z, offset = 0;
+    int y, x, z;
     float dx, dy, r, theta = 1.0f;
+    unsigned long int k;
 
+    k = 0;
     for (y = 0; y < height; y++)
     {
         for (x = 0; x < width; x++)
@@ -105,42 +113,48 @@ void defish(const unsigned char *input, unsigned char *output, int width, int he
 
             for (z = 0; z < components; z++)
             {
-                output[offset] = interpolate(input, width, components, dx, dy, z);
-                offset++;
+                output[k] = interpolate(input, width, components, dx, dy, z);
+                k++;
             }
         }
     }
 }
 
-long grayscale(const unsigned char *input, unsigned char **output, int width, int height)
+unsigned long int grayscale(const unsigned char *input, unsigned char **output, int width, int height)
 {
-    int y, x, offset = 0, offset3 = 0;
+    int y, x;
     float r = 0.299f, g = 0.587f, b = 0.114f, c = 0.5f;
+    unsigned long int k, k3;
 
     *output = malloc(width * height);
 
+    k = k3 = 0;
     for (y = 0; y < height; y++)
     {
         for (x = 0; x < width; x++)
         {
             // Y = 0.299R + 0.587G + 0.114B
-            (*output)[offset] = input[offset3] * r +
-                                input[offset3 + 1] * g +
-                                input[offset3 + 2] * b + c;
-            offset++;
-            offset3 += 3;
+            (*output)[k] = input[k3] * r +
+                           input[k3 + 1] * g +
+                           input[k3 + 2] * b + c;
+            k++;
+            k3 += 3;
         }
     }
 
-    return width * height;
+    return k;
 }
 
 void scale(unsigned char *image, int width, int height, unsigned char **newImage, int newWidth, int newHeight)
 {
-    int y, x, oldY, oldX, offset = 0;
-    unsigned long size = (unsigned long) newWidth * newHeight;
+    int y, x, oldY, oldX;
+    unsigned long int k, size;
+    
+    size = (unsigned long int) newWidth * newHeight;
+
     *newImage = malloc(size);
 
+    k = 0;
     for (y = 0; y < newHeight; y++)
     {
         for (x = 0; x < newWidth; x++)
@@ -148,8 +162,8 @@ void scale(unsigned char *image, int width, int height, unsigned char **newImage
             oldY = (float) y / newHeight * height + 0.5f;
             oldX = (float) x / newWidth * width + 0.5f;
 
-            (*newImage)[offset] = image[oldY * width + oldX];
-            offset++;
+            (*newImage)[k] = image[oldY * width + oldX];
+            k++;
 
         }
     }
@@ -157,17 +171,20 @@ void scale(unsigned char *image, int width, int height, unsigned char **newImage
 
 void genHash(unsigned char *image, int width, int height, unsigned char **hash)
 {
-    int y, x, pos;
-    unsigned long size = (unsigned long) width * height;
+    int y, x;
+    unsigned long int k, size;
+
+    size = (unsigned long int) width * height;
+
     *hash = malloc(size);
 
+    k = 0;
     for (y = 0; y < height; y++)
     {
         for (x = 0; x < width; x++)
         {
-            pos = y * width + x;
-
-            (*hash)[pos] = image[pos] < image[pos + 1];
+            (*hash)[k] = image[k] < image[k + 1];
+            k++;
         }
     }
 }
@@ -175,9 +192,9 @@ void genHash(unsigned char *image, int width, int height, unsigned char **hash)
 int jpegHash(const char *filename, unsigned char **hash, int size)
 {
     unsigned char *image;
-    unsigned long imageSize = 0;
     unsigned char *scaled;
     int width, height;
+    unsigned long int imageSize = 0;
 
     imageSize = decodeFile(filename, &image, FILETYPE_JPEG, &width, &height, JCS_GRAYSCALE);
 
@@ -245,11 +262,11 @@ void error(const char *format, ...)
     va_end(arglist);
 }
 
-long readFile(char *name, void **buffer)
+unsigned long int readFile(char *name, void **buffer)
 {
     FILE *file;
-    size_t fileLen = 0;
-    size_t bytesRead = 0;
+    unsigned long int fileLen = 0;
+    unsigned long int bytesRead = 0;
 
     unsigned char chunk[INPUT_BUFFER_SIZE];
 
@@ -277,9 +294,11 @@ long readFile(char *name, void **buffer)
     }
 
     *buffer = malloc(sizeof chunk);
+    
     while ((bytesRead = fread(chunk, 1, sizeof chunk, file)) > 0)
     {
         unsigned char *reallocated = realloc(*buffer, fileLen + bytesRead);
+        
         if (reallocated)
         {
             *buffer = reallocated;
@@ -299,12 +318,12 @@ long readFile(char *name, void **buffer)
     return fileLen;
 }
 
-int checkJpegMagic(const unsigned char *buf, unsigned long size)
+int checkJpegMagic(const unsigned char *buf, unsigned long int size)
 {
     return (size >= 2 && buf[0] == 0xff && buf[1] == 0xd8);
 }
 
-unsigned long decodeJpeg(unsigned char *buf, unsigned long bufSize, unsigned char **image, int *width, int *height, int *jpegcs, int pixelFormat)
+unsigned long int decodeJpeg(unsigned char *buf, unsigned long bufSize, unsigned char **image, int *width, int *height, int *jpegcs, int pixelFormat)
 {
     unsigned long int pixSize = 0;
     int row = 0;
@@ -356,7 +375,7 @@ unsigned long decodeJpeg(unsigned char *buf, unsigned long bufSize, unsigned cha
     return pixSize;
 }
 
-unsigned long encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, int height, int pixelFormat, int quality, int jpegcs, int progressive, int optimize, int subsample)
+unsigned long int encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, int height, int pixelFormat, int quality, int jpegcs, int progressive, int optimize, int subsample)
 {
     unsigned long int jpegSize = 0;
     struct jpeg_compress_struct cinfo;
@@ -456,15 +475,15 @@ unsigned long encodeJpeg(unsigned char **jpeg, unsigned char *buf, int width, in
     return jpegSize;
 }
 
-int checkPpmMagic(const unsigned char *buf, unsigned long size)
+int checkPpmMagic(const unsigned char *buf, unsigned long int size)
 {
     return (size >= 2 && buf[0] == 'P' && buf[1] == '6');
 }
 
-unsigned long decodePpm(unsigned char *buf, unsigned long bufSize, unsigned char **image, int *width, int *height)
+unsigned long int decodePpm(unsigned char *buf, unsigned long int bufSize, unsigned char **image, int *width, int *height)
 {
     unsigned long int ppmSize = 0;
-    unsigned long pos = 0, imageDataSize;
+    unsigned long int pos = 0, imageDataSize;
     int depth;
 
     if (!checkPpmMagic(buf, bufSize))
@@ -545,7 +564,7 @@ enum filetype detectFiletype(const char *filename)
     return ret;
 }
 
-enum filetype detectFiletypeFromBuffer(unsigned char *buf, long bufSize)
+enum filetype detectFiletypeFromBuffer(unsigned char *buf, unsigned long int bufSize)
 {
     if (checkJpegMagic(buf, bufSize))
         return FILETYPE_JPEG;
@@ -556,18 +575,18 @@ enum filetype detectFiletypeFromBuffer(unsigned char *buf, long bufSize)
     return FILETYPE_UNKNOWN;
 }
 
-unsigned long decodeFile(const char *filename, unsigned char **image, enum filetype type, int *width, int *height, int pixelFormat)
+unsigned long int decodeFile(const char *filename, unsigned char **image, enum filetype type, int *width, int *height, int pixelFormat)
 {
     unsigned char *buf = NULL;
     int jpegcs;
-    long bufSize = 0;
+    unsigned long int bufSize = 0;
     bufSize = readFile((char *)filename, (void **)&buf);
-    unsigned long ret = decodeFileFromBuffer(buf, bufSize, image, type, width, height, &jpegcs, pixelFormat);
+    unsigned long int ret = decodeFileFromBuffer(buf, bufSize, image, type, width, height, &jpegcs, pixelFormat);
     free(buf);
     return ret;
 }
 
-unsigned long decodeFileFromBuffer(unsigned char *buf, long bufSize, unsigned char **image, enum filetype type, int *width, int *height, int *jpegcs, int pixelFormat)
+unsigned long int decodeFileFromBuffer(unsigned char *buf, unsigned long int bufSize, unsigned char **image, enum filetype type, int *width, int *height, int *jpegcs, int pixelFormat)
 {
     switch (type)
     {
@@ -759,6 +778,8 @@ enum METHOD parseMethod(const char *s)
         return SMALLFRY;
     if (!strcmp("shbad", s))
         return SHARPENBAD;
+    if (!strcmp("cor", s))
+        return COR;
     if (!strcmp("nhw", s))
         return NHW;
     if (!strcmp("ssimfry", s))
@@ -774,44 +795,65 @@ float RescaleMetric(int currentmethod, float value)
 {
     switch (currentmethod)
     {
+    case MPE:
+        if (value > 0.0f)
+        {
+            value = 1.0f / value;
+            value = sqrt(value);
+            value = sqrt(value);
+            value *= 2.79f;
+            value -= 1.54f;
+        }
+        else
+        {
+            value = 1.0f;
+        }
+        break;
     case PSNR:
         value = sqrt(value);
-        value *= 1.10f;
-        value -= 6.07f;
-        break;
-    case MPE:
-        value = -sqrt(value);
-        value *= 0.85f;
-        value += 1.73f;
+        value *= 0.95f;
+        value -= 4.97f;
         break;
     case SSIM:
         value = MetricSigma(value);
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 2.38f;
-        value -= 0.24f;
+        value *= 1.95f;
+        value -= 0.20f;
         break;
     case MS_SSIM:
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 1.87f;
-        value -= 0.02f;
+        value *= 1.50f;
+        value += 0.06f;
         break;
     case SMALLFRY:
-        value *= 0.0747f;
-        value -= 6.91f;
-        break;
-    case NHW:
-        value = 1.0f / value;
-        value = sqrt(value);
-        value = sqrt(value);
-        value = sqrt(value);
-        value *= 2.23f;
-        value -= 0.95f;
+        value *= 0.0643f;
+        value -= 5.86f;
         break;
     case SHARPENBAD:
-        value *= 1.48f;
-        value -= 0.26f;
+        value *= 1.11f;
+        value -= 0.06f;
+        break;
+    case COR:
+        value = MetricSigma(value);
+        value = MetricSigma(value);
+        value *= 2.86f;
+        value -= 1.38f;
+        break;
+    case NHW:
+        if (value > 0.0f)
+        {
+            value = 1.0f / value;
+            value = sqrt(value);
+            value = sqrt(value);
+            value *= 0.37f;
+            value -= 0.39f;
+        }
+        else
+        {
+            value = 1.0f;
+        }
         break;
     }
     return value;
@@ -825,11 +867,11 @@ char* MetricName(int currentmethod)
     case FAST:
         value = "FAST";
         break;
-    case PSNR:
-        value = "PSNR";
-        break;
     case MPE:
         value = "MPE";
+        break;
+    case PSNR:
+        value = "PSNR";
         break;
     case SSIM:
         value = "SSIM";
@@ -842,6 +884,9 @@ char* MetricName(int currentmethod)
         break;
     case SHARPENBAD:
         value = "SHARPENBAD";
+        break;
+    case COR:
+        value = "COR";
         break;
     case NHW:
         value = "NHW";
@@ -885,11 +930,17 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
     // Calculate and print comparison
     switch (method)
     {
+    case MPE:
+        diff = meanPixelError(image1, image2, width, height, components);
+        break;
     case PSNR:
         diff = iqa_psnr(image1, image2, width, height, width * components);
         break;
-    case MPE:
-        diff = meanPixelError(image1, image2, width, height, 1);
+    case SSIM:
+        diff = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
+        break;
+    case MS_SSIM:
+        diff = iqa_ms_ssim(image1, image2, width, height, width * components, 0);
         break;
     case SMALLFRY:
         diff = metric_smallfry(image1, image2, width, height);
@@ -897,14 +948,11 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
     case SHARPENBAD:
         diff = metric_sharpenbad(image1, image2, width, height);
         break;
+    case COR:
+        diff = metric_cor(image1, image2, width, height);
+        break;
     case NHW:
         diff = metric_nhw(image1, image2, width, height);
-        break;
-    case MS_SSIM:
-        diff = iqa_ms_ssim(image1, image2, width, height, width * components, 0);
-        break;
-    case SSIM:
-        diff = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
         break;
     case SSIMFRY:
         tmetric = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
@@ -975,6 +1023,7 @@ int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsig
     // Set requested pixel format
     switch (method)
     {
+    case MPE:
     case PSNR:
         format = JCS_RGB;
         components = 3;
@@ -983,6 +1032,7 @@ int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsig
     case MS_SSIM:
     case SMALLFRY:
     case SHARPENBAD:
+    case COR:
     case NHW:
     default:
         format = JCS_GRAYSCALE;
