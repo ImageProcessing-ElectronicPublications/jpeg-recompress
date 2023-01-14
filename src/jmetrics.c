@@ -774,6 +774,8 @@ enum METHOD parseMethod(const char *s)
         return SSIM;
     if (!strcmp("ms-ssim", s))
         return MS_SSIM;
+    if (!strcmp("vifp1", s))
+        return VIFP1;
     if (!strcmp("smallfry", s))
         return SMALLFRY;
     if (!strcmp("shbad", s))
@@ -801,8 +803,8 @@ float RescaleMetric(int currentmethod, float value)
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            value *= 2.79f;
-            value -= 1.54f;
+            value *= 2.99f;
+            value -= 1.70f;
         }
         else
         {
@@ -811,35 +813,40 @@ float RescaleMetric(int currentmethod, float value)
         break;
     case PSNR:
         value = sqrt(value);
-        value *= 0.95f;
-        value -= 4.97f;
+        value *= 1.00f;
+        value -= 5.32f;
         break;
     case SSIM:
         value = MetricSigma(value);
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 1.95f;
-        value -= 0.20f;
+        value *= 2.07f;
+        value -= 0.26f;
         break;
     case MS_SSIM:
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 1.50f;
-        value += 0.06f;
+        value *= 1.59f;
+        value += 0.01f;
+        break;
+    case VIFP1:
+        value = MetricSigma(value);
+        value *= 3.69f;
+        value -= 2.74f;
         break;
     case SMALLFRY:
-        value *= 0.0643f;
-        value -= 5.86f;
+        value *= 0.0684f;
+        value -= 6.29f;
         break;
     case SHARPENBAD:
-        value *= 1.11f;
-        value -= 0.06f;
+        value *= 1.17f;
+        value -= 0.12f;
         break;
     case COR:
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 2.86f;
-        value -= 1.38f;
+        value *= 3.03f;
+        value -= 1.52f;
         break;
     case NHW:
         if (value > 0.0f)
@@ -847,8 +854,8 @@ float RescaleMetric(int currentmethod, float value)
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            value *= 0.37f;
-            value -= 0.39f;
+            value *= 0.40f;
+            value -= 0.48f;
         }
         else
         {
@@ -878,6 +885,9 @@ char* MetricName(int currentmethod)
         break;
     case MS_SSIM:
         value = "MS-SSIM";
+        break;
+    case VIFP1:
+        value = "VIFP1";
         break;
     case SMALLFRY:
         value = "SMALLFRY";
@@ -941,6 +951,9 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
         break;
     case MS_SSIM:
         diff = iqa_ms_ssim(image1, image2, width, height, width * components, 0);
+        break;
+    case VIFP1:
+        diff = iqa_vifp1(image1, image2, width, height, width * components, 0, 0);
         break;
     case SMALLFRY:
         diff = metric_smallfry(image1, image2, width, height);
@@ -1030,6 +1043,7 @@ int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsig
         break;
     case SSIM:
     case MS_SSIM:
+    case VIFP1:
     case SMALLFRY:
     case SHARPENBAD:
     case COR:

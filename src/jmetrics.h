@@ -59,6 +59,7 @@ enum METHOD
     PSNR,
     SSIM,
     MS_SSIM,
+    VIFP1,
     SMALLFRY,
     SHARPENBAD,
     COR,

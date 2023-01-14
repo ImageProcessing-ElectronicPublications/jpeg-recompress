@@ -1,6 +1,8 @@
-.TH "jpeg-zfpoint" 2.5.5 "14 Dec 2022" "User manual"
+.TH "jpeg-zfpoint" 2.5.9 "15 Jan 2023" "User manual"
+
 .SH NAME
 jpeg-zfpoint
+
 .SH DESCRIPTION
 Find ZF point of compress JPEGs by re-encoding to the smallest JPEG quality
 while keeping perceived visual quality the same and by making sure huffman tables are optimized.
@@ -8,8 +10,10 @@ This is a lossy operation, but the images are visually identical and it usually
 saves 30-70% of the size for JPEGs coming from a digital camera, particularly DSLRs.
 By default all EXIF/IPTC/XMP and color profile metadata is copied over,
 but this can be disabled to save more space if desired.
+
 .SH SYNOPSIS
 jpeg-zfpoint [options] image.jpg zfpoint.jpg
+
 .SH OPTIONS
 .TP
 \fB\-a\fR, \fB\-\-accurate\fR
@@ -67,11 +71,13 @@ Default settings:
 .PP
 .I
 jpeg-zfpoint image.jpg zfpoint.jpg
+
 .SH COPYRIGHT
  JPEG-Archive is copyright © 2015 Daniel G. Taylor
  Image Quality Assessment (IQA) is copyright 2011, Tom Distler (http://tdistler.com)
  SmallFry is copyright 2014, Derek Buitenhuis (https://github.com/dwbuiten)
  All rights reserved.
+
 .SH "SEE ALSO"
  jpeg-compare,
  jpeg-hash,

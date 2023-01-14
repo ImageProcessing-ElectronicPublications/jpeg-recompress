@@ -56,6 +56,7 @@ MPE         | `-m mpe`      | Mean pixel error (as used by [imgmin](https://gith
 PSNR        | `-m psnr`     | [Peak signal-to-noise ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio)
 SSIM        | `-m ssim`     | [Structural similarity](http://en.wikipedia.org/wiki/Structural_similarity)
 MS-SSIM*    | `-m ms-ssim`  | Multi-scale structural similarity (slow!) ([2008 paper](http://foulard.ece.cornell.edu/publications/dmr_hvei2008_paper.pdf))
+VIFP1       | `-m vifp1`    | [The visual information fidelity (VIF)](http://live.ece.utexas.edu/publications.php) 1 layer.
 SmallFry    | `-m smallfry` | Linear-weighted BBCQ-like ([original project](https://github.com/dwbuiten/smallfry), [2011 BBCQ paper](http://spie.org/Publications/Proceedings/Paper/10.1117/12.872231) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
 SharpenBad  | `-m shbad`    | Sharpen discrepancies ([LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
 Correlation | `-m cor`      | [Correlation](https://en.wikipedia.org/wiki/Correlation)
@@ -72,14 +73,15 @@ SUMMARY     | `-m sum`      | `(ssim + smallfry + shbad + nhw) / 4` **DEFAULT**
 ```
 Trends:
 ```
-UM = 2.79 * sqrt(sqrt(1.0 / MPE)) - 1.54
-UM = 0.95 * sqrt(PNSR) - 4.97
-UM = 1.95 * cor_sigma(cor_sigma(cor_sigma(SSIM))) - 0.20
-UM = 1.50 * cor_sigma(cor_sigma(MS_SSIM)) + 0.06
-UM = 0.0643 * SMALLFRY - 5.86
-UM = 1.11 * SHARPENBAD - 0.06
-UM = 2.86 * cor_sigma(cor_sigma(COR)) - 1.38
-UM = 0.37 * sqrt(sqrt(1.0 / NHW)) - 0.39
+UM = 2.99 * sqrt(sqrt(1.0 / MPE)) - 1.70
+UM = 1.00 * sqrt(PNSR) - 5.32
+UM = 2.07 * cor_sigma(cor_sigma(cor_sigma(SSIM))) - 0.26
+UM = 1.59 * cor_sigma(cor_sigma(MS_SSIM)) + 0.01
+UM = 3.69 * cor_sigma(VIFP1) - 2.74
+UM = 0.0684 * SMALLFRY - 6.29
+UM = 1.17 * SHARPENBAD - 0.12
+UM = 3.03 * cor_sigma(cor_sigma(COR)) - 1.52
+UM = 0.40 * sqrt(sqrt(1.0 / NHW)) - 0.48
 
 cor_sigma(M) = 1.0 - sqrt(1.0 - M * M)
 ```
