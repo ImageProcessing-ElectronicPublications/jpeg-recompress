@@ -21,7 +21,7 @@
 #define JMETRICS_H
 
 #ifndef JMVERSION
-#define JMVERSION "2.5.8"
+#define JMVERSION "2.6.0"
 #endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -204,6 +204,6 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
 float MetricSigma(float cor);
 int compareFastFromBuffer(unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int size);
 int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsigned char *imageBuf2, long bufSize2, int printPrefix, int umscale, enum filetype inputFiletype1, enum filetype inputFiletype2);
-float waverage4(float x1, float x2, float x3, float x4);
+float waverage(float *x, int count);
 
 #endif

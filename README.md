@@ -63,7 +63,7 @@ Correlation | `-m cor`      | [Correlation](https://en.wikipedia.org/wiki/Correl
 NHW         | `-m nhw`      | NHW convolutional metric ([original project](https://github.com/rcanut/NHW_Neatness_Metrics) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
 1 pair      | `-m ssimfry`  | `(ssim + smallfry) / 2`
 2 pair      | `-m ssimshb`  | `(ssim + shbad) / 2`
-SUMMARY     | `-m sum`      | `(ssim + smallfry + shbad + nhw) / 4` **DEFAULT**
+SUMMARY     | `-m sum`      | `(ssim + vipf1 + smallfry + shbad + nhw) / 5` **DEFAULT**
 
 **Note**: The SmallFry algorithm may be [patented](http://www.jpegmini.com/main/technology) so use with caution.
 

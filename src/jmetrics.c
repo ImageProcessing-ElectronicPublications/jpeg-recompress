@@ -1,32 +1,52 @@
 #include "jmetrics.h"
 
 #define INPUT_BUFFER_SIZE 102400
+#define MAX_SUM_COUNT 5
 
 float clamp(float low, float value, float high)
 {
     return (value < low) ? low : ((value > high) ? high : value);
 }
 
-float waverage4(float x1, float x2, float x3, float x4)
+float waverage(float *x, int count)
 {
-    float xm, dx1, dx2 ,dx3, dx4, dxs, w1, w2, w3, w4, ws;
-    xm = x1 + x2 + x3 + x4;
-    xm *= 0.25f;
-    dx1 = (x1 - xm) * (x1 - xm);
-    dx2 = (x2 - xm) * (x2 - xm);
-    dx3 = (x3 - xm) * (x3 - xm);
-    dx4 = (x4 - xm) * (x4 - xm);
-    dxs = dx1 + dx2 + dx3 + dx4;
-    dxs *= 0.25f;
+    int i, n;
+    float xm, delta, dx[MAX_SUM_COUNT], dxs, w[MAX_SUM_COUNT], ws;
+
+    xm = 0.0f;
+    n = 0;
+    for (i = 0; i < count; i++)
+    {
+        xm += x[i];
+        n++;
+    }
+    n = (n > 0) ? n : 1;
+    xm /= (float)n;
+    dxs = 0.0f;
+    for (i = 0; i < count; i++)
+    {
+        delta = x[i] - xm;
+        dx[i] = delta * delta;
+        dxs += dx[i];
+    }
+    dxs /= (float)n;
     if (dxs > 0.0f)
     {
-        w1 = dxs / (dxs + dx1);
-        w2 = dxs / (dxs + dx2);
-        w3 = dxs / (dxs + dx3);
-        w4 = dxs / (dxs + dx4);
-        ws = w1 + w2 + w3 + w4;
+        ws = 0.0f;
+        for (i = 0; i < count; i++)
+        {
+            w[i] = dxs / (dxs + dx[i]);
+            ws += w[i];
+        }
         if (ws > 0.0f)
-            xm = (w1 * x1 + w2 * x2 + w3 * x3 + w4 * x4) / ws;
+        {
+            xm = 0.0f;
+            for (i = 0; i < count; i++)
+            {
+                xm += (w[i] * x[i]);
+            }
+            xm /= ws;
+        }
     }
     return xm;
 }
@@ -149,7 +169,7 @@ void scale(unsigned char *image, int width, int height, unsigned char **newImage
 {
     int y, x, oldY, oldX;
     unsigned long int k, size;
-    
+
     size = (unsigned long int) newWidth * newHeight;
 
     *newImage = malloc(size);
@@ -294,11 +314,11 @@ unsigned long int readFile(char *name, void **buffer)
     }
 
     *buffer = malloc(sizeof chunk);
-    
+
     while ((bytesRead = fread(chunk, 1, sizeof chunk, file)) > 0)
     {
         unsigned char *reallocated = realloc(*buffer, fileLen + bytesRead);
-        
+
         if (reallocated)
         {
             *buffer = reallocated;
@@ -935,7 +955,7 @@ float MetricSigma(float cor)
 
 float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int width, int height, int components)
 {
-    float diff, tmetric, tm1, tm2, tm3, tm4;
+    float diff, tmetric, tm[MAX_SUM_COUNT];
 
     // Calculate and print comparison
     switch (method)
@@ -984,14 +1004,16 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
     case SUMMET:
     default:
         tmetric = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
-        tm1 = RescaleMetric(SSIM, tmetric);
+        tm[0] = RescaleMetric(SSIM, tmetric);
         tmetric = metric_smallfry(image1, image2, width, height);
-        tm2 = RescaleMetric(SMALLFRY, tmetric);
+        tm[1] = RescaleMetric(SMALLFRY, tmetric);
         tmetric = metric_sharpenbad(image1, image2, width, height);
-        tm3 = RescaleMetric(SHARPENBAD, tmetric);
+        tm[2] = RescaleMetric(SHARPENBAD, tmetric);
         tmetric = metric_nhw(image1, image2, width, height);
-        tm4 = RescaleMetric(NHW, tmetric);
-        diff = waverage4(tm1, tm2, tm3, tm4);
+        tm[3] = RescaleMetric(NHW, tmetric);
+        tmetric = iqa_vifp1(image1, image2, width, height, width * components, 0, 0);
+        tm[4] = RescaleMetric(VIFP1, tmetric);
+        diff = waverage(tm, 5);
         break;
     }
     return diff;
