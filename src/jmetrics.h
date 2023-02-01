@@ -21,7 +21,7 @@
 #define JMETRICS_H
 
 #ifndef JMVERSION
-#define JMVERSION "2.6.0"
+#define JMVERSION "2.6.1"
 #endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -56,7 +56,9 @@ enum METHOD
     UNKNOWN,
     FAST,
     MPE,
+    MSE,
     PSNR,
+    MSEF,
     SSIM,
     MS_SSIM,
     VIFP1,
@@ -98,7 +100,10 @@ int interpolate(const unsigned char *image, int width, int components, float x, 
 /*
     Get mean error per pixel rate.
 */
-float meanPixelError(const unsigned char *original, const unsigned char *compressed, int width, int height, int components);
+float metric_mpe(const unsigned char *original, const unsigned char *compressed, int width, int height, int components);
+float metric_mse(const unsigned char *ref, const unsigned char *cmp, int width, int height, int channels);
+float metric_stdev2(const unsigned char *ref, const unsigned char *cmp, int width, int height, int channels);
+float metric_msef(const unsigned char *ref, const unsigned char *cmp, int width, int height, int channels);
 
 /*
     Remove fisheye distortion from an image. The amount of distortion is

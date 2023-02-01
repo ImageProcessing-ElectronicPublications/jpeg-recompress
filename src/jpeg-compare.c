@@ -24,8 +24,8 @@ void usage(char *progname)
     printf("options:\n\n");
     printf("  -h, --help                   output program help\n");
     printf("  -m, --method [arg]           set comparison method to one of:\n");
-    printf("                               'fast', 'mpe', 'psnr', 'ssim', 'ms-ssim', 'vifp1', 'smallfry', 'shbad',\n");
-    printf("                               'cor', 'nhw', 'ssimfry', 'ssimshb', 'sum' [fast]\n");
+    printf("                               'fast', 'mpe', 'psnr', 'mse', 'msef', 'cor', 'ssim', 'ms-ssim', 'vifp1',\n");
+    printf("                               'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'sum' [fast]\n");
     printf("  -n, --norm                   UM scale metric\n");
     printf("  -r, --ppm                    parse first input as PPM instead of JPEG\n");
     printf("  -s, --size [arg]             set fast comparison image hash size\n");
@@ -160,8 +160,10 @@ int main (int argc, char **argv)
             return 255;
         }
         return compareFastFromBuffer(imageBuf1, bufSize1, imageBuf2, bufSize2, printPrefix, size);
-    case PSNR:
     case MPE:
+    case PSNR:
+    case MSE:
+    case MSEF:
     case SSIM:
     case MS_SSIM:
     case VIFP1:

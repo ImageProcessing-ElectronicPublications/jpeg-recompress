@@ -1,6 +1,11 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.6.1 "msef"
+
+    Added MSE and MSEF metric.
+    Research: correct trends UM (44 images)
+
 2.6.0 "sum"
 
     Added VIFP 1 layer in SUM metric.

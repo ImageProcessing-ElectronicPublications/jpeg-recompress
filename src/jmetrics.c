@@ -77,7 +77,7 @@ int interpolate(const unsigned char *image, int width, int components, float x, 
     return pix;
 }
 
-float meanPixelError(const unsigned char *original, const unsigned char *compressed, int width, int height, int components)
+float metric_mpe(const unsigned char *original, const unsigned char *compressed, int width, int height, int components)
 {
     int y, x, z;
     float delta, pmel, pme;
@@ -102,6 +102,90 @@ float meanPixelError(const unsigned char *original, const unsigned char *compres
     pme /= (float)k;
 
     return pme;
+}
+
+float metric_mse(const unsigned char *ref, const unsigned char *cmp, int width, int height, int channels)
+{
+    float im1, im2;
+    float suml, sum, delta;
+    int y, x, d;
+    size_t k;
+
+    k = 0;
+    sum = 0.0f;
+    for (y = 0; y < height; y++)
+    {
+        suml = 0.0f;
+        for (x = 0; x < width; x++)
+        {
+            for (d = 0; d < channels; d++)
+            {
+                im1 = (float)ref[k];
+                im2 = (float)cmp[k];
+                delta = (im1 > im2) ? (im1 - im2) : (im2 - im1);
+                suml += delta * delta;
+                k++;
+            }
+        }
+        sum += suml;
+    }
+    sum /= (float)k;
+
+    return sum;
+}
+
+float metric_stdev2(const unsigned char *ref, const unsigned char *cmp, int width, int height, int channels)
+{
+    float im1, im2;
+    float suml, sum, sumql, sumq, stdev2;
+    int y, x, d;
+    size_t k, n;
+
+    n = 2 * width * height;
+    stdev2 = 0.0f;
+    for (d = 0; d < channels; d++)
+    {
+        k = d;
+        sum = 0.0f;
+        sumq = 0.0f;
+        for (y = 0; y < height; y++)
+        {
+            suml = 0.0f;
+            sumql = 0.0f;
+            for (x = 0; x < width; x++)
+            {
+                im1 = (float)ref[k];
+                im2 = (float)cmp[k];
+                suml += im1;
+                suml += im2;
+                sumql += (im1 * im1);
+                sumql += (im2 * im2);
+                k += channels;
+            }
+            sum += suml;
+            sumq += sumql;
+        }
+        sum /= (float)n;
+        sumq /= (float)n;
+        sumq -= sum * sum;
+        stdev2 += sumq;
+    }
+    stdev2 /= (float)channels;
+
+    return stdev2;
+}
+
+float metric_msef(const unsigned char *ref, const unsigned char *cmp, int width, int height, int channels)
+{
+    float mse, stdev2;
+
+    mse = metric_mse(ref, cmp, width, height, channels);
+    stdev2 = metric_stdev2(ref, cmp, width, height, channels);
+    stdev2 = (stdev2 > 0.0f) ? stdev2 : 1.0f;
+    mse /= stdev2;
+    mse = sqrt(mse);
+
+    return mse;
 }
 
 void defish(const unsigned char *input, unsigned char *output, int width, int height, int components, float strength, float zoom)
@@ -790,6 +874,10 @@ enum METHOD parseMethod(const char *s)
         return MPE;
     if (!strcmp("psnr", s))
         return PSNR;
+    if (!strcmp("mse", s))
+        return MSE;
+    if (!strcmp("msef", s))
+        return MSEF;
     if (!strcmp("ssim", s))
         return SSIM;
     if (!strcmp("ms-ssim", s))
@@ -817,14 +905,16 @@ float RescaleMetric(int currentmethod, float value)
 {
     switch (currentmethod)
     {
+    case MSE:
+        value = sqrt(value);
     case MPE:
         if (value > 0.0f)
         {
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            value *= 2.99f;
-            value -= 1.70f;
+            value *= 2.42f;
+            value -= 1.38f;
         }
         else
         {
@@ -833,15 +923,29 @@ float RescaleMetric(int currentmethod, float value)
         break;
     case PSNR:
         value = sqrt(value);
-        value *= 1.00f;
-        value -= 5.32f;
+        value *= 0.87f;
+        value -= 4.70f;
+        break;
+    case MSEF:
+        if (value > 0.0f)
+        {
+            value = 1.0f / value;
+            value = sqrt(value);
+            value = sqrt(value);
+            value *= 1.02f;
+            value -= 1.49f;
+        }
+        else
+        {
+            value = 1.0f;
+        }
         break;
     case SSIM:
         value = MetricSigma(value);
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 2.07f;
-        value -= 0.26f;
+        value *= 1.73f;
+        value -= 0.11f;
         break;
     case MS_SSIM:
         value = MetricSigma(value);
@@ -851,22 +955,23 @@ float RescaleMetric(int currentmethod, float value)
         break;
     case VIFP1:
         value = MetricSigma(value);
-        value *= 3.69f;
-        value -= 2.74f;
+        value = MetricSigma(value);
+        value *= 1.12f;
+        value -= 0.03f;
         break;
     case SMALLFRY:
-        value *= 0.0684f;
-        value -= 6.29f;
+        value *= 0.0658f;
+        value -= 6.07f;
         break;
     case SHARPENBAD:
-        value *= 1.17f;
-        value -= 0.12f;
+        value *= 1.00f;
+        value += 0.05f;
         break;
     case COR:
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 3.03f;
-        value -= 1.52f;
+        value *= 2.87f;
+        value -= 1.42f;
         break;
     case NHW:
         if (value > 0.0f)
@@ -874,8 +979,8 @@ float RescaleMetric(int currentmethod, float value)
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            value *= 0.40f;
-            value -= 0.48f;
+            value *= 0.36f;
+            value -= 0.41f;
         }
         else
         {
@@ -899,6 +1004,12 @@ char* MetricName(int currentmethod)
         break;
     case PSNR:
         value = "PSNR";
+        break;
+    case MSE:
+        value = "MSE";
+        break;
+    case MSEF:
+        value = "MSEF";
         break;
     case SSIM:
         value = "SSIM";
@@ -961,10 +1072,16 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
     switch (method)
     {
     case MPE:
-        diff = meanPixelError(image1, image2, width, height, components);
+        diff = metric_mpe(image1, image2, width, height, components);
         break;
     case PSNR:
         diff = iqa_psnr(image1, image2, width, height, width * components);
+        break;
+    case MSE:
+        diff = metric_mse(image1, image2, width, height, components);
+        break;
+    case MSEF:
+        diff = metric_msef(image1, image2, width, height, components);
         break;
     case SSIM:
         diff = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
@@ -1060,6 +1177,8 @@ int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsig
     {
     case MPE:
     case PSNR:
+    case MSE:
+    case MSEF:
         format = JCS_RGB;
         components = 3;
         break;

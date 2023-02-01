@@ -21,8 +21,8 @@ void usage(char *progname)
     printf("  -h, --help                   output program help\n");
     printf("  -l, --loops [arg]            set the number of runs to attempt [6]\n");
     printf("  -m, --method [arg]           set comparison method to one of:\n");
-    printf("                               'mpe', 'psnr', 'ssim', 'ms-ssim', 'vifp1', 'smallfry', 'shbad',\n");
-    printf("                               'cor', 'nhw', 'ssimfry', 'ssimshb', 'sum' [sum]\n");
+    printf("                               'mpe', 'psnr', 'mse', 'msef', 'cor', 'ssim', 'ms-ssim', 'vifp1',\n");
+    printf("                               'smallfry', 'shbad', 'nhw', 'ssimfry', 'ssimshb', 'sum' [sum]\n");
     printf("  -n, --min [arg]              minimum JPEG quality [40]\n");
     printf("  -p, --no-progressive         disable progressive encoding\n");
     printf("  -q, --quality [arg]          set a quality preset: low, medium, subhigh, high, veryhigh [medium]\n");
@@ -43,7 +43,7 @@ int main (int argc, char **argv)
     int method = SUMMET;
 
     // Number of binary search steps
-    int attempts = 6;
+    int attempts = 7;
 
     float target = 0.0f;
     int preset = MEDIUM;

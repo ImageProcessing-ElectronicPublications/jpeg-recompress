@@ -54,12 +54,14 @@ Name        | Option        | Description
 ----------- | ------------- | -----------
 MPE         | `-m mpe`      | Mean pixel error (as used by [imgmin](https://github.com/rflynn/imgmin))
 PSNR        | `-m psnr`     | [Peak signal-to-noise ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio)
+MSE         | `-m mse`      | [Mean squared error](https://en.wikipedia.org/wiki/Mean_squared_error)
+MSEF        | `-m msef`     | `sqrt(MSE/Variance)`
+Correlation | `-m cor`      | [Correlation](https://en.wikipedia.org/wiki/Correlation)
 SSIM        | `-m ssim`     | [Structural similarity](http://en.wikipedia.org/wiki/Structural_similarity)
 MS-SSIM*    | `-m ms-ssim`  | Multi-scale structural similarity (slow!) ([2008 paper](http://foulard.ece.cornell.edu/publications/dmr_hvei2008_paper.pdf))
 VIFP1       | `-m vifp1`    | [The visual information fidelity (VIF)](http://live.ece.utexas.edu/publications.php) 1 layer.
 SmallFry    | `-m smallfry` | Linear-weighted BBCQ-like ([original project](https://github.com/dwbuiten/smallfry), [2011 BBCQ paper](http://spie.org/Publications/Proceedings/Paper/10.1117/12.872231) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
 SharpenBad  | `-m shbad`    | Sharpen discrepancies ([LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
-Correlation | `-m cor`      | [Correlation](https://en.wikipedia.org/wiki/Correlation)
 NHW         | `-m nhw`      | NHW convolutional metric ([original project](https://github.com/rcanut/NHW_Neatness_Metrics) -> [LibSmallFry](https://github.com/ImageProcessing-ElectronicPublications/libsmallfry))
 1 pair      | `-m ssimfry`  | `(ssim + smallfry) / 2`
 2 pair      | `-m ssimshb`  | `(ssim + shbad) / 2`
@@ -73,15 +75,16 @@ SUMMARY     | `-m sum`      | `(ssim + vipf1 + smallfry + shbad + nhw) / 5` **DE
 ```
 Trends:
 ```
-UM = 2.99 * sqrt(sqrt(1.0 / MPE)) - 1.70
-UM = 1.00 * sqrt(PNSR) - 5.32
-UM = 2.07 * cor_sigma(cor_sigma(cor_sigma(SSIM))) - 0.26
+UM = 2.42 * sqrt(sqrt(1.0 / MPE)) - 1.38
+UM = 0.87 * sqrt(PNSR) - 4.70
+UM = 1.02 * sqrt(sqrt(1.0 / MSEF)) - 1.49
+UM = 2.87 * cor_sigma(cor_sigma(COR)) - 1.42
+UM = 1.73 * cor_sigma(cor_sigma(cor_sigma(SSIM))) - 0.11
 UM = 1.59 * cor_sigma(cor_sigma(MS_SSIM)) + 0.01
-UM = 3.69 * cor_sigma(VIFP1) - 2.74
-UM = 0.0684 * SMALLFRY - 6.29
-UM = 1.17 * SHARPENBAD - 0.12
-UM = 3.03 * cor_sigma(cor_sigma(COR)) - 1.52
-UM = 0.40 * sqrt(sqrt(1.0 / NHW)) - 0.48
+UM = 1.12 * cor_sigma(cor_sigma(VIFP1)) - 0.03
+UM = 0.0658 * SMALLFRY - 6.07
+UM = 1.00 * SHARPENBAD + 0.05
+UM = 0.36 * sqrt(sqrt(1.0 / NHW)) - 0.41
 
 cor_sigma(M) = 1.0 - sqrt(1.0 - M * M)
 ```
@@ -92,7 +95,7 @@ The JPEG format allows for subsampling of the color channels to save space. For 
 
 #### Example Commands
 
-```bash
+```shell
 # Default settings
 jpeg-recompress image.jpg compressed.jpg
 
