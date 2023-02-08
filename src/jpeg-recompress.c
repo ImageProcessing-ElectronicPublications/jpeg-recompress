@@ -43,14 +43,14 @@ int main (int argc, char **argv)
     int method = SUMMET;
 
     // Number of binary search steps
-    int attempts = 7;
+    int attempts = 8;
 
     float target = 0.0f;
     int preset = MEDIUM;
 
     // Min/max JPEG quality
-    int jpegMin = 40;
-    int jpegMax = 98;
+    int jpegMin = 1;
+    int jpegMax = 99;
 
     int force = 0;
     int ycbcr = 0;

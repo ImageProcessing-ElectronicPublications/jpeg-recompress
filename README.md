@@ -71,22 +71,34 @@ SUMMARY     | `-m sum`      | `(ssim + vipf1 + smallfry + shbad + nhw) / 5` **DE
 
 "Universal Scale" of metrics (UM):
 ```
-0.0 ... (DIRTY) ... 0.5 ... (LOW) ... 0.75 ... (MEDIUM) ... 0.875 ... (SUBHIGH) ... 0.9375 ... (HIGH) ... 0.96875 ... (VERYHIGH) ... 1.0
+  0.0
+  ... (DIRTY) ...
+  0.5
+  ... (LOW) ...
+  0.75
+  ... (MEDIUM) ...
+  0.875
+  ... (SUBHIGH) ...
+  0.9375
+  ... (HIGH) ...
+  0.96875
+  ... (VERYHIGH) ...
+  1.0
 ```
 Trends:
 ```
-UM = 2.42 * sqrt(sqrt(1.0 / MPE)) - 1.38
-UM = 0.87 * sqrt(PNSR) - 4.70
-UM = 1.02 * sqrt(sqrt(1.0 / MSEF)) - 1.49
-UM = 2.87 * cor_sigma(cor_sigma(COR)) - 1.42
-UM = 1.73 * cor_sigma(cor_sigma(cor_sigma(SSIM))) - 0.11
-UM = 1.59 * cor_sigma(cor_sigma(MS_SSIM)) + 0.01
-UM = 1.12 * cor_sigma(cor_sigma(VIFP1)) - 0.03
-UM = 0.0658 * SMALLFRY - 6.07
-UM = 1.00 * SHARPENBAD + 0.05
-UM = 0.36 * sqrt(sqrt(1.0 / NHW)) - 0.41
+  UM = 2.42 * sqrt(sqrt(1.0 / MPE)) - 1.38
+  UM = 0.87 * sqrt(PNSR) - 4.70
+  UM = 1.02 * sqrt(sqrt(1.0 / MSEF)) - 1.49
+  UM = 1.0 * cor_sigma(cor_sigma(COR))
+  UM = 1.51 * cor_sigma(cor_sigma(cor_sigma(SSIM)))
+  UM = 1.59 * cor_sigma(cor_sigma(MS_SSIM))
+  UM = 1.06 * cor_sigma(cor_sigma(VIFP1))
+  UM = 0.0658 * SMALLFRY - 6.07
+  UM = 1.40 * cor_sigma(SHARPENBAD)
+  UM = 0.222 * sqrt(sqrt(1.0 / NHW))
 
-cor_sigma(M) = 1.0 - sqrt(1.0 - M * M)
+    cor_sigma(M) = 1.0 - sqrt(1.0 - M * M)
 ```
 
 #### Subsampling

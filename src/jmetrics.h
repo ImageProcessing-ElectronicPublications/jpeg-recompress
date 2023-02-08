@@ -21,7 +21,7 @@
 #define JMETRICS_H
 
 #ifndef JMVERSION
-#define JMVERSION "2.6.1"
+#define JMVERSION "2.6.2"
 #endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))

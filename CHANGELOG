@@ -1,6 +1,11 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.6.2 "sharpenbad"
+
+    reimplementation SHARPENBAD:
+      metric_sharpenbad
+
 2.6.1 "msef"
 
     Added MSE and MSEF metric.

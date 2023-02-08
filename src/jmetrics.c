@@ -903,6 +903,10 @@ enum METHOD parseMethod(const char *s)
 
 float RescaleMetric(int currentmethod, float value)
 {
+	float k1, k0;
+	
+	k1 = 1.0f;
+	k0 = 0.0f;
     switch (currentmethod)
     {
     case MSE:
@@ -913,8 +917,8 @@ float RescaleMetric(int currentmethod, float value)
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            value *= 2.42f;
-            value -= 1.38f;
+            k1 = 2.42f;
+            k0 = -1.38f;
         }
         else
         {
@@ -923,8 +927,14 @@ float RescaleMetric(int currentmethod, float value)
         break;
     case PSNR:
         value = sqrt(value);
-        value *= 0.87f;
-        value -= 4.70f;
+        k1 = 0.87f;
+        k0 = -4.70f;
+        break;
+    case COR:
+        value = MetricSigma(value);
+        value = MetricSigma(value);
+        k1 = 1.0f;
+        k0 = 0.0f;
         break;
     case MSEF:
         if (value > 0.0f)
@@ -932,8 +942,8 @@ float RescaleMetric(int currentmethod, float value)
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            value *= 1.02f;
-            value -= 1.49f;
+            k1 = 1.02f;
+            k0 = -1.49f;
         }
         else
         {
@@ -944,34 +954,29 @@ float RescaleMetric(int currentmethod, float value)
         value = MetricSigma(value);
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 1.73f;
-        value -= 0.11f;
+        k1 = 1.51f;
+        k0 = 0.0f;
         break;
     case MS_SSIM:
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 1.59f;
-        value += 0.01f;
+        k1 = 1.59f;
+        k0 = 0.0f;
         break;
     case VIFP1:
         value = MetricSigma(value);
         value = MetricSigma(value);
-        value *= 1.12f;
-        value -= 0.03f;
+        k1 = 1.06f;
+        k0 = 0.0f;
         break;
     case SMALLFRY:
-        value *= 0.0658f;
-        value -= 6.07f;
+        k1 = 0.0658f;
+        k0 = -6.07f;
         break;
     case SHARPENBAD:
-        value *= 1.00f;
-        value += 0.05f;
-        break;
-    case COR:
         value = MetricSigma(value);
-        value = MetricSigma(value);
-        value *= 2.87f;
-        value -= 1.42f;
+        k1 = 1.40f;
+        k0 = 0.0f;
         break;
     case NHW:
         if (value > 0.0f)
@@ -979,8 +984,8 @@ float RescaleMetric(int currentmethod, float value)
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            value *= 0.36f;
-            value -= 0.41f;
+            k1 = 0.222f;
+            k0 = 0.0f;
         }
         else
         {
@@ -988,6 +993,9 @@ float RescaleMetric(int currentmethod, float value)
         }
         break;
     }
+	value *= k1;
+	value += k0;
+
     return value;
 }
 
@@ -1096,7 +1104,7 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
         diff = metric_smallfry(image1, image2, width, height);
         break;
     case SHARPENBAD:
-        diff = metric_sharpenbad(image1, image2, width, height);
+        diff = metric_sharpenbad(image1, image2, width, height, 1);
         break;
     case COR:
         diff = metric_cor(image1, image2, width, height);
@@ -1114,7 +1122,7 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
     case SSIMSHBAD:
         tmetric = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
         diff = RescaleMetric(SSIM, tmetric);
-        tmetric = metric_sharpenbad(image1, image2, width, height);
+        tmetric = metric_sharpenbad(image1, image2, width, height, 1);
         diff += RescaleMetric(SHARPENBAD, tmetric);
         diff *= 0.5f;
         break;
@@ -1124,7 +1132,7 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
         tm[0] = RescaleMetric(SSIM, tmetric);
         tmetric = metric_smallfry(image1, image2, width, height);
         tm[1] = RescaleMetric(SMALLFRY, tmetric);
-        tmetric = metric_sharpenbad(image1, image2, width, height);
+        tmetric = metric_sharpenbad(image1, image2, width, height, 1);
         tm[2] = RescaleMetric(SHARPENBAD, tmetric);
         tmetric = metric_nhw(image1, image2, width, height);
         tm[3] = RescaleMetric(NHW, tmetric);
