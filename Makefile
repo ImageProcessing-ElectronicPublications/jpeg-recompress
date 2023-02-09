@@ -19,11 +19,13 @@ AR ?= ar
 RM ?= rm
 INSTALL = install
 
+LIBOBJ = src/jmetrics.o
+
 .PHONY: test clean install uninstall
 
 all: $(PROGS)
 
-$(LIBIMM): src/jmetrics.o
+$(LIBIMM): $(LIBOBJ)
 	$(AR) crs $@ $^
 
 $(PROGR): src/$(PROGR).c $(LIBIMM)
@@ -49,7 +51,7 @@ test: test/test.c $(LIBIMM)
 	./test/$@
 
 clean:
-	$(RM) -rf $(PROGS) $(LIBIMM) test/test src/*.o
+	$(RM) -rf $(PROGS) $(LIBIMM) $(LIBOBJ) test/test
 
 install: all
 	$(INSTALL) -d $(PREFIX)/bin

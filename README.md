@@ -48,7 +48,7 @@ Why are they different sizes? The default quality settings are set to average ou
 
 #### Image Comparison Metrics
 
-The following metrics are available when using `jpeg-recompress`. SSIM is the default.
+The following metrics are available when using `jpeg-recompress`. SUM is the default.
 
 Name        | Option        | Description
 ----------- | ------------- | -----------
@@ -69,7 +69,10 @@ SUMMARY     | `-m sum`      | `(ssim + vipf1 + smallfry + shbad + nhw) / 5` **DE
 
 **Note**: The SmallFry algorithm may be [patented](http://www.jpegmini.com/main/technology) so use with caution.
 
-"Universal Scale" of metrics (UM):
+#### "Universal Scale" of metrics (UM):
+
+![UM example](plot_um.svg)
+
 ```
   0.0
   ... (DIRTY) ...
@@ -87,16 +90,16 @@ SUMMARY     | `-m sum`      | `(ssim + vipf1 + smallfry + shbad + nhw) / 5` **DE
 ```
 Trends:
 ```
-  UM = 2.42 * sqrt(sqrt(1.0 / MPE)) - 1.38
+  UM = 0.25 * (sqrt(sqrt(255.0 / MPE)) - 1.0)
   UM = 0.87 * sqrt(PNSR) - 4.70
-  UM = 1.02 * sqrt(sqrt(1.0 / MSEF)) - 1.49
+  UM = 0.5 * (sqrt(sqrt(1.0 / MSEF)) - 1.0)
   UM = 1.0 * cor_sigma(cor_sigma(COR))
   UM = 1.51 * cor_sigma(cor_sigma(cor_sigma(SSIM)))
   UM = 1.59 * cor_sigma(cor_sigma(MS_SSIM))
   UM = 1.06 * cor_sigma(cor_sigma(VIFP1))
-  UM = 0.0658 * SMALLFRY - 6.07
-  UM = 1.40 * cor_sigma(SHARPENBAD)
-  UM = 0.222 * sqrt(sqrt(1.0 / NHW))
+  UM = 3.0 * (SMALLFRY * 0.01 - 0.8)
+  UM = 1.0 * cor_sigma(sqrt(SHARPENBAD))
+  UM = 0.333 * (sqrt(sqrt(1.0 / NHW)) - 1.0)
 
     cor_sigma(M) = 1.0 - sqrt(1.0 - M * M)
 ```

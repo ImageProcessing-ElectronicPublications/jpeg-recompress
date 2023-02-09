@@ -1,6 +1,11 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.6.3 "um"
+
+    Research: correct UM model.
+    2023, zvezdochiot
+
 2.6.2 "sharpenbad"
 
     reimplementation SHARPENBAD:

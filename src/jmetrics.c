@@ -903,10 +903,10 @@ enum METHOD parseMethod(const char *s)
 
 float RescaleMetric(int currentmethod, float value)
 {
-	float k1, k0;
-	
-	k1 = 1.0f;
-	k0 = 0.0f;
+    float k1, k0;
+    
+    k1 = 1.0f;
+    k0 = 0.0f;
     switch (currentmethod)
     {
     case MSE:
@@ -914,11 +914,12 @@ float RescaleMetric(int currentmethod, float value)
     case MPE:
         if (value > 0.0f)
         {
-            value = 1.0f / value;
+            value = 255.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            k1 = 2.42f;
-            k0 = -1.38f;
+            value -= 1.0f;
+            k1 = 0.25f;
+            k0 = 0.0f;
         }
         else
         {
@@ -942,8 +943,9 @@ float RescaleMetric(int currentmethod, float value)
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            k1 = 1.02f;
-            k0 = -1.49f;
+            value -= 1.0f;
+            k1 = 0.5f;
+            k0 = 0.0f;
         }
         else
         {
@@ -970,12 +972,15 @@ float RescaleMetric(int currentmethod, float value)
         k0 = 0.0f;
         break;
     case SMALLFRY:
-        k1 = 0.0658f;
-        k0 = -6.07f;
+        value *= 0.01f;
+        value -= 0.8f;
+        k1 = 3.0f;
+        k0 = 0.0f;
         break;
     case SHARPENBAD:
+        value = sqrt(value);
         value = MetricSigma(value);
-        k1 = 1.40f;
+        k1 = 1.0f;
         k0 = 0.0f;
         break;
     case NHW:
@@ -984,7 +989,8 @@ float RescaleMetric(int currentmethod, float value)
             value = 1.0f / value;
             value = sqrt(value);
             value = sqrt(value);
-            k1 = 0.222f;
+            value -= 1.0f;
+            k1 = 0.333f;
             k0 = 0.0f;
         }
         else
@@ -993,8 +999,8 @@ float RescaleMetric(int currentmethod, float value)
         }
         break;
     }
-	value *= k1;
-	value += k0;
+    value *= k1;
+    value += k0;
 
     return value;
 }
