@@ -1,6 +1,11 @@
 JPEG Recompress
 https://github.com/ImageProcessing-ElectronicPublications/jpeg-recompress
 
+2.6.4 "um"
+
+    Research: correct UM model: all metrics.
+    2023, zvezdochiot
+
 2.6.3 "um"
 
     Research: correct UM model.

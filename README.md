@@ -90,16 +90,16 @@ SUMMARY     | `-m sum`      | `(ssim + vipf1 + smallfry + shbad + nhw) / 5` **DE
 ```
 Trends:
 ```
-  UM = 0.25 * (sqrt(sqrt(255.0 / MPE)) - 1.0)
-  UM = 0.87 * sqrt(PNSR) - 4.70
+  UM = 0.29 * (sqrt(sqrt(255.0 / MPE)) - 1.0)
+  UM = 0.557 * (sqrt(PNSR) - 5.0)
   UM = 0.5 * (sqrt(sqrt(1.0 / MSEF)) - 1.0)
   UM = 1.0 * cor_sigma(cor_sigma(COR))
-  UM = 1.51 * cor_sigma(cor_sigma(cor_sigma(SSIM)))
+  UM = 1.57 * cor_sigma(cor_sigma(cor_sigma(SSIM)))
   UM = 1.59 * cor_sigma(cor_sigma(MS_SSIM))
-  UM = 1.06 * cor_sigma(cor_sigma(VIFP1))
+  UM = 1.10 * cor_sigma(cor_sigma(VIFP1))
   UM = 3.0 * (SMALLFRY * 0.01 - 0.8)
-  UM = 1.0 * cor_sigma(sqrt(SHARPENBAD))
-  UM = 0.333 * (sqrt(sqrt(1.0 / NHW)) - 1.0)
+  UM = 1.46 * cor_sigma(SHARPENBAD)
+  UM = 0.342 * (sqrt(sqrt(1.0 / NHW)) - 1.0)
 
     cor_sigma(M) = 1.0 - sqrt(1.0 - M * M)
 ```

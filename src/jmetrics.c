@@ -901,12 +901,11 @@ enum METHOD parseMethod(const char *s)
     return UNKNOWN;
 }
 
-float RescaleMetric(int currentmethod, float value)
+float MetricRescale(int currentmethod, float value)
 {
-    float k1, k0;
-    
+    float k1;
+
     k1 = 1.0f;
-    k0 = 0.0f;
     switch (currentmethod)
     {
     case MSE:
@@ -918,8 +917,7 @@ float RescaleMetric(int currentmethod, float value)
             value = sqrt(value);
             value = sqrt(value);
             value -= 1.0f;
-            k1 = 0.25f;
-            k0 = 0.0f;
+            k1 = 0.29f;
         }
         else
         {
@@ -928,14 +926,13 @@ float RescaleMetric(int currentmethod, float value)
         break;
     case PSNR:
         value = sqrt(value);
-        k1 = 0.87f;
-        k0 = -4.70f;
+        value -= 5.0f;
+        k1 = 0.557f;
         break;
     case COR:
         value = MetricSigma(value);
         value = MetricSigma(value);
         k1 = 1.0f;
-        k0 = 0.0f;
         break;
     case MSEF:
         if (value > 0.0f)
@@ -945,7 +942,6 @@ float RescaleMetric(int currentmethod, float value)
             value = sqrt(value);
             value -= 1.0f;
             k1 = 0.5f;
-            k0 = 0.0f;
         }
         else
         {
@@ -956,32 +952,26 @@ float RescaleMetric(int currentmethod, float value)
         value = MetricSigma(value);
         value = MetricSigma(value);
         value = MetricSigma(value);
-        k1 = 1.51f;
-        k0 = 0.0f;
+        k1 = 1.57f;
         break;
     case MS_SSIM:
         value = MetricSigma(value);
         value = MetricSigma(value);
         k1 = 1.59f;
-        k0 = 0.0f;
         break;
     case VIFP1:
         value = MetricSigma(value);
         value = MetricSigma(value);
-        k1 = 1.06f;
-        k0 = 0.0f;
+        k1 = 1.10f;
         break;
     case SMALLFRY:
         value *= 0.01f;
         value -= 0.8f;
         k1 = 3.0f;
-        k0 = 0.0f;
         break;
     case SHARPENBAD:
-        value = sqrt(value);
         value = MetricSigma(value);
-        k1 = 1.0f;
-        k0 = 0.0f;
+        k1 = 1.46f;
         break;
     case NHW:
         if (value > 0.0f)
@@ -990,8 +980,7 @@ float RescaleMetric(int currentmethod, float value)
             value = sqrt(value);
             value = sqrt(value);
             value -= 1.0f;
-            k1 = 0.333f;
-            k0 = 0.0f;
+            k1 = 0.342f;
         }
         else
         {
@@ -1000,7 +989,6 @@ float RescaleMetric(int currentmethod, float value)
         break;
     }
     value *= k1;
-    value += k0;
 
     return value;
 }
@@ -1120,30 +1108,30 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
         break;
     case SSIMFRY:
         tmetric = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
-        diff = RescaleMetric(SSIM, tmetric);
+        diff = MetricRescale(SSIM, tmetric);
         tmetric = metric_smallfry(image1, image2, width, height);
-        diff += RescaleMetric(SMALLFRY, tmetric);
+        diff += MetricRescale(SMALLFRY, tmetric);
         diff *= 0.5f;
         break;
     case SSIMSHBAD:
         tmetric = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
-        diff = RescaleMetric(SSIM, tmetric);
+        diff = MetricRescale(SSIM, tmetric);
         tmetric = metric_sharpenbad(image1, image2, width, height, 1);
-        diff += RescaleMetric(SHARPENBAD, tmetric);
+        diff += MetricRescale(SHARPENBAD, tmetric);
         diff *= 0.5f;
         break;
     case SUMMET:
     default:
         tmetric = iqa_ssim(image1, image2, width, height, width * components, 0, 0);
-        tm[0] = RescaleMetric(SSIM, tmetric);
+        tm[0] = MetricRescale(SSIM, tmetric);
         tmetric = metric_smallfry(image1, image2, width, height);
-        tm[1] = RescaleMetric(SMALLFRY, tmetric);
+        tm[1] = MetricRescale(SMALLFRY, tmetric);
         tmetric = metric_sharpenbad(image1, image2, width, height, 1);
-        tm[2] = RescaleMetric(SHARPENBAD, tmetric);
+        tm[2] = MetricRescale(SHARPENBAD, tmetric);
         tmetric = metric_nhw(image1, image2, width, height);
-        tm[3] = RescaleMetric(NHW, tmetric);
+        tm[3] = MetricRescale(NHW, tmetric);
         tmetric = iqa_vifp1(image1, image2, width, height, width * components, 0, 0);
-        tm[4] = RescaleMetric(VIFP1, tmetric);
+        tm[4] = MetricRescale(VIFP1, tmetric);
         diff = waverage(tm, 5);
         break;
     }
@@ -1246,7 +1234,7 @@ int compareFromBuffer(int method, unsigned char *imageBuf1, long bufSize1, unsig
     // Calculate and print comparison
     diff = MetricCalc(method, image1, image2, width1, height1, components);
     if (umscale)
-        diff = RescaleMetric(method, diff);
+        diff = MetricRescale(method, diff);
     if (printPrefix)
         printf("%s: ", MetricName(method));
     printf("%f", diff);

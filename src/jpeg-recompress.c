@@ -326,7 +326,7 @@ int main (int argc, char **argv)
 
         // Measure quality difference
         metric = MetricCalc(method, originalGray, compressedGray, width, height, 1);
-        umetric = RescaleMetric(method, metric);
+        umetric = MetricRescale(method, metric);
         info(quiet, MetricName(method));
 
         if (attempt)

@@ -21,7 +21,7 @@
 #define JMETRICS_H
 
 #ifndef JMVERSION
-#define JMVERSION "2.6.3"
+#define JMVERSION "2.6.4"
 #endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -203,7 +203,7 @@ int parseSubsampling(const char *s);
 enum QUALITY_PRESET parseQuality(const char *s);
 float setTargetFromPreset(int preset);
 enum METHOD parseMethod(const char *s);
-float RescaleMetric(int currentmethod, float value);
+float MetricRescale(int currentmethod, float value);
 char* MetricName(int currentmethod);
 float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int width, int height, int components);
 float MetricSigma(float cor);
