@@ -1135,6 +1135,10 @@ float MetricCalc(int method, unsigned char *image1, unsigned char *image2, int w
         diff = waverage(tm, 5);
         break;
     }
+    if (diff == INFINITY)
+    {
+        diff = 0.0f;
+    }
     return diff;
 }
 
