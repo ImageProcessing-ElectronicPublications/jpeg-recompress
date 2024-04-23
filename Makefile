@@ -1,61 +1,63 @@
-PNAME = jpeg-recompress
-CC ?= gcc
-CFLAGS += -std=c99 -Wall -O3
-LIBIQA = -liqa
-LIBSFRY = -lsmallfry
-LIBJPEG = -ljpeg
-LIBWEBP = -lwebp
-LIBIMM = jmetrics.a
-LDFLAGS += -lm $(LIBJPEG) $(LIBIQA) $(LIBSFRY)
-PROGR = jpeg-recompress
-PROGC = jpeg-compare
-PROGH = jpeg-hash
-PROGZ = jpeg-zfpoint
-PROGW = webp-compress
-PROGS = $(PROGR) $(PROGC) $(PROGH) $(PROGZ) $(PROGW)
-PREFIX ?= /usr/local
-MAKE ?= make
-AR ?= ar
-RM ?= rm
-INSTALL = install
+project_name := jpeg-recompress
+project_data := man src test CHANGELOG Dependencies LICENSE Makefile meson* plot_um.svg README.md
 
-LIBOBJ = src/jmetrics.o
+.SILENT:
+.PHONY: all dist dist-clean install clean help update-version clear-version configure build
 
-.PHONY: test clean install uninstall
+all: configure build
 
-all: $(PROGS)
-
-$(LIBIMM): $(LIBOBJ)
-	$(AR) crs $@ $^
-
-$(PROGR): src/$(PROGR).c $(LIBIMM)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-$(PROGC): src/$(PROGC).c $(LIBIMM)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-$(PROGH): src/$(PROGH).c $(LIBIMM)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-$(PROGZ): src/$(PROGZ).c $(LIBIMM)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-$(PROGW): src/$(PROGW).c $(LIBIMM)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBWEBP)
-
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-test: test/test.c $(LIBIMM)
-	$(CC) $(CFLAGS) -o test/$@ $^ $(LDFLAGS)
-	./test/$@
+install:
+	cd build && \
+	meson install && \
+	:
 
 clean:
-	$(RM) -rf $(PROGS) $(LIBIMM) $(LIBOBJ) test/test
+	rm -rf build && \
+	:
 
-install: all
-	$(INSTALL) -d $(PREFIX)/bin
-	$(INSTALL) -m 0755 $(PROGS) $(PREFIX)/bin/
+help:
+	echo "Please provide a target:" ; \
+	echo "  [default]   - configure and build" ; \
+	echo "   install    - install to system" ; \
+	echo "   clean      - delete build dir" ; \
+	:
 
-uninstall:
-	$(RM) -f $(PREFIX)/bin/$(PROGR) $(PREFIX)/bin/$(PROGC) $(PREFIX)/bin/$(PROGH) $(PREFIX)/bin/$(PROGZ)
+update-version:
+	version=$(shell git describe --tags --abbrev=7 | sed -E 's/^[^0-9]*//;s/-([0-9]*-g.*)$$/.r\1/;s/-/./g') && \
+	meson rewrite kwargs set project / version $$version && \
+	echo "project version: $$version" && \
+	:
+
+clear-version:
+	meson rewrite kwargs delete project / version - && \
+	:
+
+configure:
+	meson setup build && \
+	:
+
+build:
+	export PKG_CONFIG_PATH="$(pkgconf_path)" && \
+	cd build && \
+	ninja && \
+	:
+
+dist:
+	export version=$(shell git describe --tags --abbrev=7 | sed -E 's/^[^0-9]*//;s/-([0-9]*-g.*)$$/.r\1/;s/-/./g') && \
+	echo "... $${version} ..." && \
+	export pkgdir="$(project_name)_$$version" && \
+	echo "... $${pkgdir} ..." && \
+	mkdir -p "$${pkgdir}" && \
+	cp --reflink=auto -r -t "$${pkgdir}/" -- $(project_data) && \
+	pushd "$${pkgdir}" > /dev/null && \
+	echo "... rewrite version..." && \
+	meson rewrite kwargs set project / version $$version && \
+	popd > /dev/null && \
+	echo "... creating tarball..." && \
+	tar -c -J --numeric-owner --owner=0 -f "$${pkgdir}.tar.xz" "$${pkgdir}" && \
+	:
+
+dist-clean:
+	rm -rf $(project_name)_*/ && \
+	rm -f $(project_name)_*.tar.xz && \
+	:
