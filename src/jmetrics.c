@@ -92,7 +92,7 @@ float metric_mpe(const unsigned char *original, const unsigned char *compressed,
         {
             for (z = 0; z < components; z++)
             {
-                delta = abs((float)original[k] - (float)compressed[k]);
+                delta = abs(original[k] - compressed[k]);
                 pmel += delta;
                 k++;
             }
